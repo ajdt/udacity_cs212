@@ -1,0 +1,216 @@
+Unit 1 takes us through writing a poker program to illustrate
+some basic programming design concepts.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3 Steps to writing any program:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1)  Understand the problem -- the terms being dealt with.
+        Application environment, terms, interactions etc.
+
+        ex: in Poker game, we understand that we must
+        represent hands, and cards which have ranks and suits
+        each hand having 5 cards
+
+2)  Specify what your project/solution is supposed to do
+    What types of data do we need to store, use etc..?
+    What types of functions must we provide?
+
+    ex: Our project must deal a variable number of 5 card
+    hands, then be able to determine which is the highest
+    ranking hand
+
+3)  Design and code. Create a design plan for the software
+    system and implement the plan.
+
+    ex: we have a function "poker(hands) => hand"
+    and a function "hand_rank(hand) => rank_of_hand"
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Data Representations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ex: representing hands could be done in a number
+    of ways:
+
+    [ 'JS', 'JD', ...]  // list of strings
+    [(11, 'S'), (11, 'D')...] // list of tuples
+    set( 'JS', 'JD', ...)   // a set of strings
+    "JS JD..."              // one long string
+
+    ** pick the best representation that will allow you
+    to meet needed criteria. Also, doesn't add unnecessary
+    restrictions. Ex: A set would unnecessarily restrict
+    us to a hand that doesn't have duplicate cards
+
+> defining poker(hand) function
+
+    def poker(hands)
+        " returns the best hand"
+        return max(hands, key=hand_rank)
+
+    ** The above is a good definition because it's short,
+    and follows the problem specifications well.
+    AS MUCH AS POSSIBLE LET IMPLEMENTATION MATCH SPECIFICATION
+
+> representing hand_rank of a hand
+    possibilities:
+    1) Use integers, one number per hand ex: 99995 is 4
+        of a kind with 9s. We could use real numbers too
+        if we wanted to.
+    2) use tuples (7, 9, 5) means four of a kind ( 7 is hand
+    rank number) with 9s and a five. Tuples are compared 
+    relationally by comparing corresponding parts.
+
+    ** we choose to use tuples because they have a closer
+    correspondence to the specifications, their use and
+    implementation are also clearer, and the code makes
+    more sense this way.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> Each part of a specification needs to become an implementation
+    and a test. Tests are needed so you know you've met the
+    specifications. If things are done right, or if future tests
+    break something, it becomes easy to tell
+
+    ** a good programmer is a good tester too!
+
+> TIP: Test extreme values. In the poker game, if we pass
+    an empty list to the poker() function what happens? 
+    Error on empty list? What if there's 100 hands?
+
+> In python to write a test:
+
+    def test_function():
+        # do some test cases
+        assert <some true statement>
+        return "test passes"
+
+> Computing VS Doing
+    There are two types of functions:
+
+    Computing   (ex: sqrt, sin) create a new value ( aka pure functions)
+    Doing       shuffle         do something to the state of the world
+                                more like a subroutine than a real function
+
+    > computing functions are easier to test. 
+    > Testing a doing function involves setting up the right state, running
+    a function, then checking the state again. The more state we have the
+    more trouble to setup and to test.
+    > Stick to "doing" functions only when necessary
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+General Programming Tips
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> reuse code as much as possible. Video 17 has great use of built-in 
+    python functions like "set" and "max"
+> Check if the language or a library already does something you need.
+    ex: using python list's built-in count method, instead of manually
+    counting the number of occurrences of a value.
+> Also reuse your own code as much as possible. 
+> Understand the language you're using well. Understand it's limitations
+    and what it does well.
+
+    Ex: Norvig's solution to the deal function makes use of array slices
+    a convenient python feature that reduces the amount of code written.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Refactoring 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> A CHANGE IN CODE SHOULD BE PROPORTIONAL TO CHANGE IN CONCEPTUALIZATION !
+    > Ex: to hande an Aces-low straight we could change the card_rank(),
+    straight(), or hand_rank() functions. By changing the card_rank() to
+    deal with the special case, we minimized the number of changes. The
+    hand_rank function assigning value to a hand could stay the same.
+
+    > Ex2: For handling ties we changed the poker() function to 
+    deal with a list of best hands, not just one hand, and created
+    a function called allMax to return all the maximal hands. 
+    An example of code change proportional to conceptualization change.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dimensions of Programming
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> Programming problems involve a specific area that evolves over time.
+   A multi-dimensional point.
+
+   The dimensions: (efficiency, features, elegance, correctness)
+
+> Over time position changes as we add features, fix bugs,
+    or increase efficiency.
+> changing elegance makes programs easier to maintain, modify etc.
+    "It buys you time for later on"
+
+> "the best is the enemy of the good." -- Voltaire
+    Striving for perfection in correctness might be a waste of time
+    better used in one of the other dimensions. Learn to choose the right 
+    trade-offs.
+> Moving along the elegance axis is refactoring
+    ex: we got rid of the if-statement chain in hand_rank by using a
+    dictionary instead.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lessons Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1) Understand the Problem   -- define the pieces of the problem and
+    figure out what you have to represent.
+2) Reuse code as much as you can
+3) Test your code. This ensures that your program does what is right
+    and meets the criteria.
+4) Explore the design space and all the dimensions. Decide where you 
+    want to be in the design space. Stop when you believe you're there.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Office Hours 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> How much research done when you start a new project?
+    2 levels:
+    low-level tools, built-in functions and data sets. Learn
+    what's available, keep reminding yourself about the core functionality.
+    It's normal to look at the documentation constantly
+
+    For larger pieces of code: ex: web-server, parsing e-mail.
+    For big jobs try to find the right module etc.
+
+    Always look for what you have to write and what might have been
+    written before.
+> keep in mind multiple solutions to a given problem. Norvig wants
+    us to consider our solution vs others. Do some introspection on
+    the code, look @ the tricks others have done.
+
+    Every advanced feature in a programming language is there because
+    somebody suffered in the past, and a better way was consequently made.
+    If you suffer b/c you don't know about a feature, then you get to 
+    see that the feature is important. You have learned something.
+
+> Evaluating two solutions equal correctness/runtime?
+    Code should be clear and express what you want to do.
+    The code that reads the most like English is best. Because
+    we know we're going to be successful in our communication.
+    There should be a clear 1:1 mapping between code and english
+    description.
+
+    Programs can fail to communicate what you want b/c they're too
+    short or too long. Need to develop the right taste for this.
+
+> A top-down approach to programming. VS a bottom up
+    > A lot of the choices of where to start depend on the domain,
+    and where you are clear and what you don't understand.
+
+    > if you have good clarity of the top-level concepts, then
+    starting from top-down is better.
+
+    > if you don't have good top-level knowledge, you might look
+    at the pieces, how they fit together, and build up a solution
+    from the bottom up. Try to understand a bit at a time.
+
+    Never be afraid to follow wishful thinking: if only I had
+    a function that did x, then I could...
+
+> Advice for current students in computer science
+    Things are more accessible now than ever before. 
+    Keep finding other people to bounce ideas off of, and learn
+    from them.

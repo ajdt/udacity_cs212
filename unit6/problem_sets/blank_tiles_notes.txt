@@ -1,0 +1,12 @@
+Norvig does a better job of not disturbing existing 
+program structure.
+
+> He doesn't have to modify calculate_score() b/c he
+adds lowercase letters to the POINTS dictionary, mapping
+them to 0
+> he doesn't create new functions is_prefix or is_word
+    > he just puts pre.upper() in a temporary variable
+    and checks that against WORDS and PRE
+> this makes his solution more elegant b/c he doesn't 
+    have to make as many changes to the original code, just
+    a few changes and some additions

@@ -1,0 +1,53 @@
+~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~~~~~~~~
+> here we deal with problems whose solution is a 
+    sequence of steps
+> dealing with search problems:
+    > Norvig calls the exploration problems
+    > have a goal subset, an explored subset, and a 
+    frontier subset, all are subsets of the set of
+    possible states we could be in.
+> Search
+    > some problems require search to be solved
+    > different kinds of search
+    > a gigantic field, we only touched on a few basic
+    searches
+    > we covered
+        > shortest-path & least-cost
+> search is subtle
+> Bugs
+    > where there's subtlety there's likely to be bugs
+
+> to combat Bugs
+    > lots tests
+    > standardized tools (re-use as much as possible)
+> generalize 
+    > part of reuse is generalization
+    > look @ a specific problem, and find the
+    parts that you'll use over and over again.
+
+    > break up the problem into two parts:
+        > current problem
+        > a general problem
+~~~~~~~~~~~~~~~~~~~~
+Flux When Coding
+~~~~~~~~~~~~~~~~~~~~
+> While doing bridge problem:
+    > everything is in flux, trying to choose a good
+    representation but changing our minds as we go along.
+    We keep changing our definition of what an action is
+
+        > this kind of flux is ok if it remains contained
+        > if uncertainties are going to cross barriers 
+        between functions, then they should be taken
+        care of. Otherwise it's not a big deal
+
+~~~~~~~~~~~~~~~~~~~~
+The Lesson of Generalizing
+~~~~~~~~~~~~~~~~~~~~
+> writing/debugging our bridge problem solution,demonstrated
+    the need for generalization.
+    > search is error prone, and tricky, it's inefficient to 
+    rewrite it for every use required. instead we wrote
+    a general version of search

@@ -1,0 +1,424 @@
+Video 1:
+---------
+Quick and dirty calculation is important for programmers, lets us be lazy.
+
+This class is about managing complexity, sometimes it's easier just to 
+leave complexity out all together.
+
+We'll learn how to make things more efficient, when to stop, and 
+how to do the back of the envelope calculations to evaluate efficiency
+
+Zebra Puzzle example:
+??????????????????????????????????????????????????????????????????????????
+1 There are five houses.
+2 The Englishman lives in the red house.
+3 The Spaniard owns the dog.
+4 Coffee is drunk in the green house.
+5 The Ukrainian drinks tea.
+6 The green house is immediately to the right of the ivory house.
+7 The Old Gold smoker owns snails.
+8 Kools are smoked in the yellow house.
+9 Milk is drunk in the middle house.
+10 The Norwegian lives in the first house.
+11 The man who smokes Chesterfields lives in the house next to the 
+    man with the fox.
+12 Kools are smoked in a house next to the house where the horse is kept.
+13 The Lucky Strike smoker drinks orange juice.
+14 The Japanese smokes Parliaments.
+15 The Norwegian lives next to the blue house.
+
+Who drinks water? Who owns the zebra?
+Each house is painted a different color, and their inhabitants are of 
+different nationalities, own different pets, drink different beverages 
+and smoke different brands of American cigarettes.
+??????????????????????????????????????????????????????????????????????????
+
+Let's take inventory of the concepts of the puzzle:
+Houses, Properties( nationality, colors, pets, drinks, smokes)
+Assignment(location[next_to, righ_of, first, last])
+
+Do we need to separate out the separate types of assignment? Like
+Lives in, owns etc?
+
+Or can we ignore these distinctions and just represent an association
+between all the concepts?
+    Ans: we need an association into groups, one group per property b/c
+    association within a group is mutually exclusive [ a house can't be
+    both red and blue], but among groups it's not exclusive at all.
+
+video 2
+-----------
+
+assignment types
+    deduce?     // seems like a lot of work
+    try all possibilities // not so much work, we can let the computer
+                            // do all the heavy lifting
+
+    
+    first put Englishman in house 1, Spaniard can be in any one
+    of the houses 2,3,4, or 5. Englishman and Spaniard are in
+    the same property group, so they can' be associated with the
+    same house.
+
+video 3 counting assignments
+-------------
+for a property group, how many ways can we assign the properties to 
+a house?
+
+video 4 Multiple properties
+-------------
+But we also have 5 properties not one, so the total number of
+possible assignments is much greater.
+
+So the number of possible assignments is really (5!)^5 .
+
+
+video 5 back of the envelope
+-------------
+
+Just how much is (5!)^5 roughly? Here Norvig gets us to have
+a rough estimate on the number of tries our program must perform.
+
+There's about 20 billion possibilities.
+
+5! = 120 or about 100 and 100^5 = ten billion, so we can guess 
+about 20 billion. Actual value is around 24 billion
+
+
+video 6 leaving happy valley
+-------------
+
+computers can do about 1 billion instructions per second, if no
+page faults or cache miss. If in the millions, we'd definitely be
+done, if in trillions, then definitely wouldn't work.
+But in the billions we're not sure.
+
+We have to do some refining (thinking?) to get a more efficient
+solution.
+
+Consider assignment again to get a better insight:
+
+ways we could implement assignment:
+    > house[1].add( 'red' )     // as a set
+    > house[1].color = 'red'    // as a custom class
+    > red = 1                   // assign house to property instead
+                                // of property to house
+Norvig says all choices work, I think the last one is crap.
+He decided to go with the last one because it's simple.
+
+We can start with, for example, the set of colors,
+and map it to the house numbers.
+
+(red, green, ivory, yellow, blue) => [ 1, 2, 3, 4, 5]
+What's a good way to do this??
+
+My solution ( with ignorance of python) Keep the numbers
+fixed, but do different permutations of the set of colors,
+and other properties. To test all possibilities.
+
+
+video 7 Ordering Houses
+-------------
+Norvig's solution:
+    houses = [1, 2, 3, 4, 5]
+    orderings = F(houses)   # a collection of possible orderings
+    for ( red, green, ivory, yellow, blue) in orderings:
+        # each ordering is assigned to a color via
+        # the loops control mechanism, this is elegant!!!
+
+    F should be a permutation function
+    
+    My solution:
+    colors = ['red', 'green', 'blue', 'yellow', 'ivory']
+    permutations = []
+
+    def permutation (colors, candidate)gen
+        if colors.size() == 0
+            permutations.add(candidate)
+            return
+        for color in colors :
+            permutation(colors.remove(color), candidate.add(color))
+
+
+    ## the above is much more ugly, less concise 
+
+    
+video 8 Length of Orderings
+-------------
+itertools module has a permutations functionality.
+what would be the len( orderings ) ?
+
+video 9 Estimating Runtime
+------------
+
+> Suppose our program looks like:
+    
+    import itertools
+    houses = [1, 2, 3, 4, 5]
+    orderings = list(itertools.permutations(houses))
+    for (red, green, ivory, yellow, blue) in orderings:
+        for( Englishman, Spaniard, Ukranian, Japanese, Norwegian) in orderings:
+            for (dog, snails, fox, horse, ZEBRA) in orderings:
+                for (coffee, tea, milk, oj, WATER) in orderings:
+                    for (OldGold, Kools, Chesterfields, LuckyStrike, Parliaments) in orderings:
+                        # constraints go here
+
+> How long until computer can find a solution to the problem ???
+    > Norvig claims about an hour, I thought about a minute.
+
+video 10 Red Englishman
+------------
+(5!)^5 = 24 billion, assume 2.4 GHz processor.
+
+If we could make the code be one giant instruction we'd be done in ten
+seconds.
+100 instructions gives 1000 seconds
+but 1000 instructions gives about an hour.
+
+Doing contraint 2 about Englishman & red house
+
+    # constraints go here
+    if ( Englishman == red ) : # contraint 2 met
+        return ;
+    could use "Englishman is red" as condition, is returns true
+    if both arguments are identical object. Python considers 
+    equivalent small integers to be identical.
+
+video 11 Neighbors
+------------
+> two concepts we haven't talked about: being neighbors, and being
+    immediately to the right of
+
+    def imright(h1, h2):
+        "House h1 is immediately right of h2 if h1 - h2 == 1."
+        return h1-h2 == 1
+
+    def nextto(h1, h2)
+        "Two houses are next to each other if they differ by 1."
+        return imright(h1, h2) or imright(h2, h1)
+
+video 12 Slow Solution
+------------
+> The code is below, Norvig decided to use a generator expression
+    instead of nested for loops because structure is easier.
+    next() returns the first matching solution????
+    > returns a pair (WATER, ZEBRA), i.e. two house numbers
+    
+def zebra_puzzle():
+    "Return a tuple (WATER, ZEBRA) indicating their house numbers."
+    houses = first, _, middle,_, _ = [1, 2, 3, 4, 5]
+    orderings = list(itertools.permutations(houses)) 
+    return next((WATER, ZEBRA)
+            for (red, green, ivory, yellow, blue) in orderings
+            for (Englishman, Spaniard, Ukranian, Japanese, Norwegian) in orderings
+            for ( dog, snails, fox, horse ZEBRA) in orderings
+            for (coffee, tea, milk, oj, WATER) in orderings
+            for (OldGold, Kools, Chesterfields, LuckyStrike, Parliament) in orderings
+
+            if Englishman is red
+            if Spaniard is dog
+            if coffee is green
+            if Ukranian is tea
+            if imright(green, ivory)
+            if oldGold is snails
+            if Kools is yellow
+            if milk is middle
+            if Norwegian is first
+            if nextto(Chesterfields, fox)
+            if nextto(Kools, horse)
+            if LuckyStrike is oj
+            if Japanese is Parliaments
+    )
+
+video 13 List Comprehensions ( in prep. for generator expressions )
+------------
+
+A list comprehension is similar to:
+
+result = []
+for r,s in cards:
+    if r in 'JQK':
+        result.append(s)
+
+[ s for r, s in cards if r in 'JQK' ]
+
+video 14 Generator Expressions
+------------
+> Generator expression syntax:
+    ( term for-clause optional_for_if_clauses )
+
+    > like a list comprehension "[]" means list, "()" means
+        generator expression
+> a generator expression is like a "promise". It's not evaluated
+    right away, but only as its elements are needed (Lazy evaluation).
+> if we use next( generator_expression ) next value is returned
+    > unless there's no values left, then StopIteration exception is returned
+> usually use generators inside a for-loop, or convert to list, so
+    StopException isn't encountered
+
+
+video 15 Eliminating Redundancy
+------------
+> Move constraints up so that we don't check things that clearly dont' work
+> Ex: 
+
+    .....
+            for (red, green, ivory, yellow, blue) in orderings
+            for (Englishman, Spaniard, Ukranian, Japanese, Norwegian) in orderings
+            # TEST THIS CONDITION AS SOON AS RED AND ENGLISHMAN ARE SET
+            if Englishman is red
+            for ( dog, snails, fox, horse ZEBRA) in orderings
+            for (coffee, tea, milk, oj, WATER) in orderings
+            for (OldGold, Kools, Chesterfields, LuckyStrike, Parliament) in orderings
+
+    ......
+            if Spaniard is dog
+            if coffee is green
+
+video 16 Winning the Race
+------------
+> Norvig Moved every constraint to the earliest point it will go
+> in less than a second the result is produced. Whereas the
+    original program was still running.
+
+> time module used to time the two programs
+    import time
+
+    time.clock() returns the system time
+
+    > segway: it would be great to have a function that times any other function
+
+    def timecall(fn, *args):
+        "Call function and return elapsed time."
+        t0 = time.clock()
+        result = fn()
+        t1 = time.clock()
+        return t1 - t0, result
+
+video 17 Star Args
+------------
+
+def something (fn, *args)
+    // means this function takes up any number of arguments,
+    // they should all be joined in a tuple called args
+
+
+fn ( *args ) // unpacking the arguments in the tuple args
+
+in python functions are first class values, they can be passed around
+and assigned to variables. Being able to pass around functions
+allows us to delay the execution of a function until later, among other
+things.
+
+video 18 Good Science
+------------
+> Timing involves measurements
+> went from mathematical world to experimental science
+    > in this world, one measurement isn't enough, there could be errors
+    > we need to repeat measurements
+
+video 19 Timed Calls
+------------
+
+> demonstrated this code...
+
+def timedcall(fn, *args):
+    "Call function with args; return the time in seconds and result."
+    t0 = time.clock()
+    result = fn()
+    t1 = time.clock()
+    return t1 - t0, result
+
+def timedcalls(n, fn, *args):
+    "Call function n times with args; return the min, avg, and max time"
+    times = [timedcall(*args)[0] for _ in range(n)] 
+    return min(times), average(times), max(times)
+
+def average(numbers):
+    "Return the average (arithmetic mean) of a sequence of numbers."
+    return sum(numbers) / float(len(numbers))
+
+> choosing n depends on how long you think the function takes
+> if fast, choose larger n value
+> what if we don't know how long it might take?
+    def timedcalls(n, fn, *args):
+        """Call function n times if n is an int, or upto n seconds if
+        n is a float with args; return the min, avg, and max time"""
+
+        if isinstance(n, int):
+            times = [timedcall(*args)[0] for _ in range(n)]
+            return min(times), average(times), max(times)
+        else:
+            times = []
+            while sum(times) < n :
+                times.append( timedcall(fn, *args)[0])
+            return min(times), average(times), max(times)
+
+video 20 Cleaning Up Functions
+------------
+> different aspects considered when designing a program
+    > Correctness
+    > Efficiency
+    > Debugging process
+
+    We often end up with an interleaved mess of code that
+    is for correctness, other code for efficiency and some
+    code just for debugging purposes.
+
+> We should try to separate out these different aspects
+    as much as possible ( Aspect Oriented Programming )
+
+> ex: add bookkeeping nodes to our zebra_puzzle program to
+    count the number of assignments that occur? How, without
+    disturbing the original program structure too much?
+
+    Norvig solution: wrap every use of orderings with a function
+    call c():
+
+    ex: for (red, blue, ivory, green, yellow ) in c( orderings ) 
+    c() is used with this instrument function:
+
+    def instrument_fn(fn, *args):
+        c.starts, c.items = 0, 0
+        result = fn(*args)
+        print '%s got %s with %d iters over %7d items' % (
+        fn.__name__, result, c.starts, c.items )
+
+
+video 21 Yielding Results
+------------
+> Generator Functions
+
+    def ints(start, end):
+        i = start
+        while i <= end:
+            yield i
+            i = i + 1
+
+    As soon as yield statement is encountered, we return, but we remember
+    where we were in the function.o
+
+    L = ints(0, 1000) # L is a generator
+    # can use L in a for loop or access elements separately
+
+    # allows for infinite sequences if we modify the ints function so
+        while-loop condition is " i <= end or end is None "
+
+
+video 22 All ints
+------------
+> designed a Generator function called all_ints
+    > Norvig's solution is simpler than mine (see all_ints.py for mine) :
+        
+        def all_ints():
+            "Generate integers in the order 0, +1, -1, +2, -2, ..."
+            yield 0
+            for i in ints(1):
+                yield +i
+                yield -i
+
+
+video 23 
+------------
+
+

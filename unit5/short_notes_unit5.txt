@@ -1,0 +1,106 @@
+~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~~~~~~~~
+> the class is all about managing complexity
+    > many programs deal with complexity by ruling out
+    uncertainty
+    > easy, but constrains what you can do
+> we'll learn about how the laws of probability can
+    help your programs deal with uncertainty
+    > can allow uncertainty in actions or what you know
+    about your world, but still use laws of probability
+    to figure out what the right thing to do is.
+
+> often probability arises in search problems?
+    > How?
+        > two possible ways
+            > we can start at any one of a set
+            of start states
+            > we don't know ahead of time what
+                the effect of an action will be.
+                We could end up in a different
+                result state than intended
+> Our exploration uses the dice game: PIG
+
+~~~~~~~~~~~~~~~~~~~~
+Making Code More Explicit
+~~~~~~~~~~~~~~~~~~~~
+> Norvig states that he's worried about our state tuple
+    being too long ( 4 elements ).
+> a better alternative to maintain clarity is a NamedTuple
+    > gives a name to a tuple and it's elements, kind
+    of like a struct.
+> unfortunately, since we're just at the razor's edge of
+    readability with our state, and b/c NamedTuples add
+    a lot of verbosity, we chose to use just regular tuples
+
+~~~~~~~~~~~~~~~~~~~~
+Dependency Injection
+~~~~~~~~~~~~~~~~~~~~
+> how do we test when there's a non-deterministic element
+    to a function?
+    > use dependency injection
+    > inject some deterministic values
+> dependency injection
+    > we affect something that a function calls or relies on
+
+~~~~~~~~~~~~~~~~~~~~
+Program analysis
+~~~~~~~~~~~~~~~~~~~~
+> with respect to optimal pig strategy...
+> in this analysis our design choices paid off
+    > we built from the ground up, so at the bottom
+    we have a lot of useful tools, to help analyse the
+    situation. We can put them together in different
+    ways to analyse our strategies or do something else.
+
+    Often it's good to build components along the way,
+    so we can code our main goal, but also use the pieces
+    for something else if necessary
+> Norvig describes the power of breaking things up between
+    what is happening ( the in-game rules, situation etc) 
+    and maximizing. 
+    > In this way, we can write a program that maximizes
+    without having to encode the rules of the game into
+    the decision process ( i.e. when your in such and
+    such state do this).
+> exploration is a big part too
+    > didn't just build a big program to do one thing
+    > we built a set of tools instead
+    > when we needed to do something else with these tools
+        it was easy
+~~~~~~~~~~~~~~~~~~~~
+Simulation Vs. Enumeration
+~~~~~~~~~~~~~~~~~~~~
+> two ways of dealing with probability
+    > randomly sample until we have a large enough data
+    set and hope that it's representative of the whole
+        > simluation
+        > norvig claims we've been doing this, I don't know
+        how
+> enumerate all possibilities and do an analysis for
+    the probabilities you're interested in.
+~~~~~~~~~~~~~~~~~~~~
+Summary
+~~~~~~~~~~~~~~~~~~~~
+> probability helps us deal with uncertainty
+> we can search with uncertainty
+    > utility lets us do this by providing the best-action
+    >  utility separates the how from the what
+        > don't have to tell computer how to find best
+        answer
+        > just state what the situation is, and it finds
+        the best answer (using utility as a guideline )
+> simulation
+    > making repeated random choices, and counting up
+        results
+> enumeration
+    > for when we have few possibilities
+
+> inject functionality into a function by
+    sneaking it in on top of one of the arguments
+    > part of aspect oriented programming
+        Keep printing/debugging separate from
+        main logic
+> exploratory data analysis is possible if we
+    have a good design.

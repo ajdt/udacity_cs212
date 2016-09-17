@@ -1,0 +1,100 @@
+# -----------------
+# User Instructions
+#
+# In this problem, you will solve the pouring problem for an arbitrary
+# number of glasses. Write a function, more_pour_problem, that takes
+# as input capacities, goal, and (optionally) start. This function should
+# return a path of states and actions.
+#
+# Capacities is a tuple of numbers, where each number represents the
+# volume of a glass.
+#
+# Goal is the desired volume and start is a tuple of the starting levels
+# in each glass. Start defaults to None (all glasses empty).
+#
+# The returned path should look like [state, action, state, action, ... ]
+# where state is a tuple of volumes and action is one of ('fill', i),
+# ('empty', i), ('pour', i, j) where i and j are indices indicating the
+# glass number.
+
+
+
+def more_pour_problem(capacities, goal, start=None):
+    """The first argument is a tuple of capacities (numbers) of glasses; the
+    goal is a number which we must achieve in some glass.  start is a tuple
+    of starting levels for each glass; if None, that means 0 for all.
+    Start at start state and follow successors until we reach the goal.
+    Keep track of frontier and previously explored; fail when no frontier.
+    On success return a path: a [state, action, state2, ...] list, where an
+    action is one of ('fill', i), ('empty', i), ('pour', i, j), where
+    i and j are indices indicating the glass number."""
+    if start is None:
+        start = tuple([0])*len(capacities)
+    goal_fn = lambda state: goal in state
+    return shortest_path_search(start, successors_gen(capacities), goal_fn)
+
+# felt like using nested for-loops gave me more flexibility
+# to decide which entries belonged to
+# the successors dictionary, than if I used a comprehension
+def successors_gen(capacities):
+    def successors(state):
+        succ = []
+        for i, level_i in enumerate(state):
+            if level_i > 0:
+                succ.append([edit_tuple(state, (i, 0)), ('empty', i)])
+            if level_i < capacities[i]:
+                succ.append([edit_tuple(state, (i, capacities[i])), ('fill', i)])
+            for j, level_j in enumerate(state):
+                if j == i:
+                    continue
+                # handle pouring
+                if (capacities[j] - level_j) > level_i : # enough room left
+                    succ.append( [edit_tuple(state, (i, 0),
+                                  (j,level_j+level_i)), ('pour', i, j)])
+                else:
+                    succ.append([edit_tuple(state, (i, level_i - (capacities[j] - level_j)),
+                             (j, capacities[j])), ('pour', i, j)])
+        return dict(succ)
+    return successors
+
+def edit_tuple(tup, *index_value_pairs):
+    """takes an aribitrary number of (index, value) tuples. Changes the value
+       at index position to value for each tuple in the * argument"""
+    for index, value in index_value_pairs:
+        tup = tup[:index] + tuple([value]) + tup[index+1:]
+    return tup
+
+def shortest_path_search(start, successors, is_goal):
+    """Find the shortest path from start state to a state
+    such that is_goal(state) is true."""
+    if is_goal(start):
+        return [start]
+    explored = set()
+    frontier = [ [start] ]
+    while frontier:
+        path = frontier.pop(0)
+        s = path[-1]
+        for (state, action) in successors(s).items():
+            if state not in explored:
+                explored.add(state)
+                path2 = path + [action, state]
+                if is_goal(state):
+                    return path2
+                else:
+                    frontier.append(path2)
+    return Fail
+
+Fail = []
+
+def test_more_pour():
+    assert more_pour_problem((1, 2, 4, 8), 4) == [
+        (0, 0, 0, 0), ('fill', 2), (0, 0, 4, 0)]
+    assert more_pour_problem((1, 2, 4), 3) == [
+        (0, 0, 0), ('fill', 2), (0, 0, 4), ('pour', 2, 0), (1, 0, 3)]
+    starbucks = (8, 12, 16, 20, 24)
+    assert not any(more_pour_problem(starbucks, odd) for odd in (3, 5, 7, 9))
+    assert all(more_pour_problem((1, 3, 9, 27), n) for n in range(28))
+    assert more_pour_problem((1, 3, 9, 27), 28) == []
+    return 'test_more_pour passes'
+
+print test_more_pour()

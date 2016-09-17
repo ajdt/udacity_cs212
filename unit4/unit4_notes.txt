@@ -1,0 +1,722 @@
+~~~~~~~~~~~~~~~~~~~~
+video 1 Water Pouring Problem
+~~~~~~~~~~~~~~~~~~~~
+> The problem
+    > given a set of cups of a certain capacity 
+        ( 9 oz, 4 oz, etc), and a given amount of fluid
+        how can we measure out an amount of fluid, x
+    > actions we can take:
+        > pour from 1 cup to another, from faucet to cup
+        > from cup to drain
+
+    > concept inventory
+        > cups -- have capacity & current level
+        > collections of cups
+            ** set of cups and current levels
+            represents complete state of the world
+            (i.e. where we are in the problem )
+        > goal
+        > pouring actions
+            > empty
+            > fill
+            > transfer -- two ways to do it
+                > transfer x -> y
+                    done until y is full
+                    or x is empty
+        > solution is a sequence of steps to
+            measure out the correct amount of liquid
+
+        > complexity we're trying to manage is dealing with
+        sequences that are long.
+        > This unit is about problems where the solution is
+        a sequence of steps
+
+~~~~~~~~~~~~~~~~~~~~
+video 2 Combinatorial Complexity
+~~~~~~~~~~~~~~~~~~~~
+> we've dealt with problems having a combinatorial 
+    complexity before -- zebra_puzzle, cryptarithmetic
+
+> for this case what is our combinatorial complexity if
+we have 2 cups with 4 and 9 oz capacities, a goal of 6 oz
+, and there are six possible actions to be performed?
+
+> Ans:
+    we're not picking static variables, but a sequence
+    of actions. We don't know how long the sequence is
+    just how many choices we have at each stage
+
+    all we know is that the combinatorial complexity is
+    6^x, for some x
+
+> this type of problem is a combinatorial optimization 
+    problem or a search problem
+~~~~~~~~~~~~~~~~~~~~
+video 3 Exploring the Space
+~~~~~~~~~~~~~~~~~~~~
+> Norvig calls the search problem an exploration problem
+    instead.
+> We're exploring possible solutions. The set of possible
+    states is divided into 3 subsets
+    > goal subset 
+        all states that meet the goal requirements
+    > explored subset 
+        all states that have been fully explored
+    > frontier subset
+        all states that haven't fully been explored
+> to make progress, take a frontier state and explore it
+    further
+
+> Problems to consider
+    > what if there is no solution? Program must be able
+        to find out that there is no solution
+    > finding a solution efficiently
+        means having a good strategy for exploring the
+        solution space.
+    > need a strategy for exploration so we don't loop
+        infinitely within the solution space
+
+> To ensure we eventually arrive at a solution:
+    > don't allow our search to re-explore (i.e.) go back
+        to explored states or frontier states
+    > always explore the shortest frontier path you have
+        so far. Loops still exist, but they don't stop
+        you from getting to search, just slow you down
+
+~~~~~~~~~~~~~~~~~~~~
+video 4 Pouring Solution
+~~~~~~~~~~~~~~~~~~~~
+> one more concept:
+    successors of a state
+        > the states you can get to from a given state
+            and the number of steps it takes to get there
+> the pouring solution is pretty much an implementation
+    of the concepts in our concept inventory seen earlier
+
+> Algorithm:    # by Peter Norvig
+                    (I have renamed certain vars
+                        to make program clearer)
+
+    def pour_problem(cup1, cup2, goal, start=(0,0)):
+        """cup1 and cup2 are the capacities of the
+        glasses. (x,y) is the current fill level, and
+        represents current state. The goal is a level
+        that can be in either glass. Start at the 
+        start state and follow sucessors until goal is 
+        reached. keep track of frontier and previously
+        explored; fail when there is no frontier."""
+
+        if goal in start:
+            return [start]
+
+        explored = set()    # set of visited states
+        frontier = [ [start] ] # an ordered list instead of set
+
+        while frontier:
+            path = frontier.pop(0) 
+            (x, y) = path[-1] # last visited state
+
+            for (state, action) in successors(x, y, cup1, cup2).items()
+                if state not in explored:
+                    explored.add(state)
+                    path2 = path + [action, state]
+                    if goal in state:
+                        return path2
+                    else:
+                        frontier.append(path2)
+        return Fail
+Fail = []
+
+    
+    def successors(x, y, max_x, max_y):
+        """Return a dict of {state:action} pairs 
+        describing what can be reached from the (x, y)
+        state, and how."""
+
+        # check that x and y are less maximum fill levels
+        assert x <= max_x and y <= max_y 
+
+        return { ((0, y+x) if y+x <= max_y else (x-(max_y - y), y+(max_y - y))):'X->Y',
+                ((x+y, 0) if x+y <= max_x else (x+(max_x - x), y-(max_x-x))):'X<-Y',
+                (max_x, y):'fill X', (x, max_y):'fill Y',
+                (0, y):'empty X', (x, 0):'empty Y' }
+
+~~~~~~~~~~~~~~~~~~~~
+video 5 Doctest
+~~~~~~~~~~~~~~~~~~~~
+> you can use the doctest module as an alternative way to
+    test code.
+> you define test cases in a doc string as if they were
+    the input/output to/from an interactive python session
+
+> see doctest_example.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 6 Bridge Problem
+~~~~~~~~~~~~~~~~~~~~
+> the problem
+    > have a rickety bridge a set of people P are trying to
+    cross at night. Only 2 people may cross at a time, and
+    a flashlight is necessary to cross. There's only one 
+    flashlight. For each person, p in the set P he/she
+    takes a time t(x) to cross the bridge due to physical
+    shape, fear etc.
+
+    > what combination of actions can get everyone across
+    the bridge the fastest??
+
+~~~~~~~~~~~~~~~~~~~~
+video 7 Representing State
+~~~~~~~~~~~~~~~~~~~~
+> by representing state, I think Norvig means representing
+    the current state of the problem
+> concept inventory
+    person
+    people -- 2 collections, those on the here side &
+        on the there side
+    light
+
+> representations
+    person      -- a number
+    people 
+    light
+> possible representations of people concept
+    tuple
+    list
+    set
+    frozenset
+    
+    > which choice would be ok, and which choice is hashable?
+        Hashable is important b/c our soln to the 
+        water pouring problem involved a hash map and we'll
+        probably have a similar approach
+
+    > all of the choices can represent people, 
+        but only a tuple or a frozenset are hashable.
+        The others are mutable
+~~~~~~~~~~~~~~~~~~~~
+video 8 Bridge Successors
+~~~~~~~~~~~~~~~~~~~~
+> Norvig's representation
+    > a tuple of three elements
+
+        ( here, there, t )
+
+        here = frozenset of people
+        there = trozenset of people
+        t = elapsed time
+
+    > light represented as string "light" inside one
+        of the frozen sets
+
+    > possible initial conditions:
+    ( {1, 2, 5, 10, 'light'}, {}, 0)
+
+> successors of a state
+    > people always move from the set with "light" in
+        it to the other set
+    > either one or two people can move across at a time
+    > thus with four total people on side with light,
+        there are a possible 10 successors for that state
+> asked to write bridge successors function
+    > see bridge_successors.py for my solution and later
+        Norvig's solution
+> Norvig says that maybe he made a bad choice for 
+    representation b/c his solution was wordier
+    than expected. 
+
+    A good way to refactor would be to remove 'light'
+    from the sets so they're sets of people not all
+    things on one side or the other. Using a flag
+    for 'light' instead of having it in the sets
+    would make things more concise
+
+    > a nice thing about Norvig's representation is
+    that you don't have to consider one person 
+    going across or two going across as separate cases
+
+    > everything is in flux, trying to choose a good
+    representation but changing our minds as we go along.
+    We keep changing our definition of what an action is
+
+        > this kind of flux is ok if it remains contained
+        > if uncertainties are going to cross barriers 
+        between functions, then they should be taken
+        care of. Otherwise it's not a big deal
+
+~~~~~~~~~~~~~~~~~~~~
+video 9 Paths Actions States
+~~~~~~~~~~~~~~~~~~~~
+> Asks us to create two simple functions
+    
+# ----------------
+# User Instructions
+#
+# Write two functions, path_states and path_actions. Each of these
+# functions should take a path as input. Remember that a path is a 
+# list of [state, action, state, action, ... ]
+# 
+# path_states should return a list of the states. in a path, and 
+# path_actions should return a list of the actions.
+
+def path_states(path):
+    "Return a list of states in this path."
+    return path[::2]
+
+def path_actions(path):
+    "Return a list of actions in this path."
+    return path[1::2]
+~~~~~~~~~~~~~~~~~~~~
+video 10 Bridge Solution
+~~~~~~~~~~~~~~~~~~~~
+> similar to the water pouring solution except
+    > we sort our frontier paths based on shortest
+        elapsed time, so we can find the best solution
+    > also we terminate when the "here" set becomes empty
+
+> the solution given by Norvig is in fact wrong, he wants
+    to show us the debugging process. His successor function
+    seems to be incorrect
+~~~~~~~~~~~~~~~~~~~~
+video 11 Debugging
+~~~~~~~~~~~~~~~~~~~~
+> Fixed the bug, we were iterating over items in 'here'
+    when we're supposed to be moving people from there
+    to here
+~~~~~~~~~~~~~~~~~~~~
+video 12 Did It Work
+~~~~~~~~~~~~~~~~~~~~
+> Is the code working now?
+    > for input [ 1, 2, 5, 10]
+        gives a total time of 19 seconds to get
+        everyone across, but there's a faster solution!
+~~~~~~~~~~~~~~~~~~~~
+video 13 Improving the Solution
+~~~~~~~~~~~~~~~~~~~~
+> what did we do wrong?
+    > we chose the first path that got to a goal state.
+    > even though we kept our paths sorted by path length,
+        a scenario like the following is possible:
+
+        there's paths p, q in Path where len(q) = len(p) + 1.
+        There's a successor to p called b that reaches 
+        a goal state, and a successor to q called c that
+        reaches a goal state, but len(p_to_a) > len(q_to_c) + 1.
+
+        Thus even though we'll choose the path to b, 
+        in fact it happens that:
+        len(path_to_b) > len(path_to_c)
+
+> How do we fix this?
+    > Exhaust the frontier
+        > but frontier could be infinite
+    > one step each
+        > even after we find a solution, we give every
+        frontier node another step
+    > test later
+        > we place a path in the frontier regardless, and
+            check if it's at a goal state only when we
+            pop() that path off the frontier.
+        > I think this option is best b/c we are constantly
+            sorting by path length. When we pop a goal state
+            off, there will be no paths shorter than it.
+
+            > it's as if, once a goal state is reached, we
+            keep iterating until all paths are the same length
+            or longer than the solution, to ensure we have
+            the shortest solution.
+~~~~~~~~~~~~~~~~~~~~
+video 14 Modify Code
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to make the modification to
+    the bridge problem code to find shortest solution
+
+> see bridge_problem.py for my solution
+
+~~~~~~~~~~~~~~~~~~~~
+video 15 Adding Tests
+~~~~~~~~~~~~~~~~~~~~
+> the problem is tricky, lots of cases to take care of, so
+    we should write more tests.
+> Norvig asks us to write at least 3 more tests, with 
+    doctest
+> see testing_bridge_problem.py
+
+> Norvig says:
+    Testing is important! try to get in the habit of doing
+    it regularly
+
+~~~~~~~~~~~~~~~~~~~~
+video 16 Refactoring Paths
+~~~~~~~~~~~~~~~~~~~~
+> In testing our biggest concern is correctness, but
+    we also consider efficiency
+
+> Big efficiency problem
+    > our state representation      (here, there, time)
+    considers two states different even if time is the
+    only difference among the states.
+
+    Thus ( {1, 2}, {3}, 1) and ( {1, 2}, {3}, 8)
+    are different states.
+
+    > to fix this, we refactor, so that time isn't in the
+        state tuple.
+        > Now:
+            state ---> (here, there)
+            path ---> [ state, (action, total_time), ...]
+
+            ** so we also changed the path to store time
+            along with the action instead
+            before it was
+            path --> [state, action,...]
+> Norvig asks us to write the new successors function
+    called bsuccessors2, to implement the above change
+
+    see: second_bsuccessors.py
+    I tried to make the code shorter, w/out sacrificing
+    readability too much, I think I was successful
+
+~~~~~~~~~~~~~~~~~~~~
+video 17 Calculating Costs
+~~~~~~~~~~~~~~~~~~~~
+> generalized the concept of time elapsed, and decided to
+    call it cost instead
+> wants us to define a path_cost(path) function to give
+    the cost of a path
+    and a bcost(action) function that returns the cost
+    of one action
+> code was pretty simple, so I've omitted it here
+
+~~~~~~~~~~~~~~~~~~~~
+video 18 Putting it Together
+~~~~~~~~~~~~~~~~~~~~
+> Norvig shows us bridge_problem2.
+    > pretty similar to old solution, just refactored
+    for the new way cost is handled.
+    > path_cost() is called after a path is popped, to
+        calculate the cost for the current path.
+    > for every successor we use bcost() to calculate the
+    cost of the action. 
+    
+    total_cost = b_cost(current_action)+ path_cost(current_path)
+
+    when we append to a path:
+    path2 = path + [(action, total_cost), state]
+
+> also created a helper function to add_to_frontier
+    > if the path we're trying to add has already been
+    reached, then we only keep the best path (shortest cost)
+~~~~~~~~~~~~~~~~~~~~
+video 19 Generalizing
+~~~~~~~~~~~~~~~~~~~~
+> Moral of the story
+    > this search is tricky, there's a lot to consider
+    > tools to avoid mistakes
+        > write lots of tests, we need more tests
+        > use (re-use) tools
+            > don't want to recreate this search function
+                for every possible use.
+            > instead generalize our search b/c it is 
+            tricky to get it right and this way we can 
+            reuse it
+~~~~~~~~~~~~~~~~~~~~
+video 20 Missionaries and Cannibals
+~~~~~~~~~~~~~~~~~~~~
+> we're going to generalize our search by considering a
+    different problem:
+    > instead of a cost problem which is complicated, we're
+    doing a problem involving shortest path (i.e.) shortest
+    number of steps to a solution
+
+> the Missionaries and Cannibals problem:
+    3 missionaries, 3 cannibals, 1 boat. we must get everyone
+    across a river, but at most 2 people can use boat at
+    once, and if there are ever more cannibals than 
+    missionaries on either side => the cannibals overpower
+    the missionaries and eat them.
+
+> possible representations
+    > set(missionaries), set(cannibals), boat_boolean
+    > numMissionaries, numCannibals, numShips
+        *** this is data for the left side only
+    > numM1, numC1, numShips1, numM2, numC2, numShips2
+        *** a count of misssionaries, ships, and cannibals
+        for each side
+
+~~~~~~~~~~~~~~~~~~~~
+video 21 Generalized State
+~~~~~~~~~~~~~~~~~~~~
+> To generalize the problem for any number of boats,
+    cannibals and missionaries which of the above
+    representations is sufficient?
+
+> it's best to use the last representation and have an
+    explicit set of variables for each side counting
+    missionaries, cannibals and boats
+
+~~~~~~~~~~~~~~~~~~~~
+video 22 CSuccessors
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to define the csuccessors function
+> Norvig's solution is very clean, and maintainable.
+    > He defines a dictionary of "deltas", each entry is a
+    tuple of delta values for the state tuple, and an
+    action string.
+    > see norvig_csuccessors.py for more details
+~~~~~~~~~~~~~~~~~~~~
+video 23 Mc Problem
+~~~~~~~~~~~~~~~~~~~~
+> I started my own solution before seeing his solution
+> see armando_mc_problem.py for the solution
+
+> Norvig's solution is at norvig_mc_problem.py
+    > it resembles the pouring water problem,
+    I think he made it purposely error prone for
+    the other videos
+    > mine is similar, but I think the point where
+    he checks if we've attained the goal is incorrect
+~~~~~~~~~~~~~~~~~~~~
+video 24 Shortest Path Search
+~~~~~~~~~~~~~~~~~~~~
+> we're going to generalize our specific solver for
+    pouring and missionaries/cannibals and call it
+    the "shortest path search"
+
+> concept inventory
+    > paths
+    > states
+    > actions
+    > successors
+    > start
+    > goal
+> concept representation
+    > paths     [ state, action, state, action...]
+    > states    atomic
+    > actions   atomic
+    > successors { state:action }
+    > start     atomic
+    > goal  # a function goal(state) --> boolean
+
+    > states and actions are atomic, our shortest path
+    search doesn't know what it's representation is.
+    All it needs to know is that it can give the
+    start state to the successors and goal functions to
+    perform it's work
+
+    > we could specify a specific goal or a set of goals
+    but sometimes our set can get really big, for maximum
+    flexibility Norvig decided to turn goal into a
+    function instead.
+
+> our shortest path search needs the following parameters
+    > successors(state)
+    > start
+    > goal(state)
+
+~~~~~~~~~~~~~~~~~~~~
+video 25 Sps Function
+~~~~~~~~~~~~~~~~~~~~
+> Norvig gives us the template for the
+    shortest_path_search() function and
+    asks us to write the function by
+    generalizing the algorithm in mc_problem()
+
+> see sps_function.py for my answer, 
+> Norvig copied his old code for the missionaries problem
+    almost verbatim, only changing the function calls
+    to successor and the way goal is checked.
+    > In this way generalizing just meant factoring out
+    the successors and goal behavior so they could be
+    substituted for.
+    > I mostly did the same thing, but copied my old
+    code instead of his.
+
+> NOTE:
+    > Norvig's code doesn't explicitly sort anything
+    by length, so how is he getting the shortest path??
+    > some property of the way he's adding to the frontier
+    I guess
+
+~~~~~~~~~~~~~~~~~~~~
+video 26 Cleaning Up Mc Problem
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to rewrite the missionaries problem
+ by using our generalized shortest_path_search()
+
+~~~~~~~~~~~~~~~~~~~~
+video 27 Lowest Cost Search
+~~~~~~~~~~~~~~~~~~~~
+> generalizing once again, this time we want
+    a lowest-cost search, instead of just shortest path
+    > the bridge problem is our model
+
+> concept inventory
+    > paths
+    > states
+    > actions
+    > successors
+    > start
+    > goal
+    > action_cost
+> Norvig asks us to define a lowest cost search function
+    similar to the bridge problem
+> again this problem was, pretty trivial. To generalize,
+    we simply made use of our successors function,
+    our action_cost() function, and removed any code
+    that was specific to the bridge problem state
+    representation ( like things referencing the 'here'
+    and 'there' sets). The final_state, path_cost,
+    and add_to_frontier functions work unchanged
+
+    > it's a bit more difficult to understand how the
+    algorithm actually works, but even that's not so
+    difficult.
+    > unlike the path cost search, this search must
+    keep a running total of path cost. Also when 
+    adding to the frontier we must check for other
+    paths reaching the same final state, if we encounter
+    another path with the same final state, then we
+    only keep the cheapest path.
+> see lowest_cost_search.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 28 Back to Bridge Problem
+~~~~~~~~~~~~~~~~~~~~
+> asks us to redefine bridge problem based on the 
+    lowest_cost_search function
+> mostly redefining was easy. I simply defined a goal
+    function, and removed the time value from the 
+    state tuple. A state tuple now looks like 
+    
+    (here, there)
+
+> Norvig's goal function also covers a trivial case
+where "here" has no people but does have the flash-light.
+He checks if here is empty or if it just has 'light' 
+in the set
+
+~~~~~~~~~~~~~~~~~~~~
+Summary
+~~~~~~~~~~~~~~~~~~~~
+> Search
+    > some problems require search to be solved
+    > different kinds of search
+    > a gigantic field, we only touched on a few basic
+    searches
+    > we covered
+        > shortest-path & least-cost
+> search is subtle
+> Bugs
+    > where there's subtlety there's likely to be bugs
+
+> to combat Bugs
+    > lots tests
+    > standardized tools (re-use as much as possible)
+> generalize 
+    > part of reuse is generalization
+    > look @ a specific problem, and find the
+    parts that you'll use over and over again.
+
+    > break up the problem into two parts:
+        > current problem
+        > a general problem
+~~~~~~~~~~~~~~~~~~~~
+Office Hours
+~~~~~~~~~~~~~~~~~~~~
+> functional vs imperative programming
+    > use the tools you have, don't become dogmatic
+    > functional programming is easier to test
+    > imperative programming, for efficiency issues,
+        legacy code, 
+    > expressiveness:
+        > some problems better expressed as a series
+        of actions, 1st this, then this
+        > other problems better expressed as a
+        set of math functions
+        > always choose the representation that fits
+        your problem the closest
+    > parallel programming
+        > functional programming is coming back
+            b/c of this
+        > it's harder to deal with state and synchronization
+            in imperative programming
+        > each core executes a different function & it's easier
+            to synchronize their work
+> as you code you find out if your representation is good,
+    everything is in flux
+    > what's the first step to pin down a good representation?
+        > a question of style
+            > waterfall model
+                > finish one stage, water flows over dam onto
+                next stage
+                    > next stage is specify the problem &
+                    do it completely
+                    > do one stage completely before going on
+                    to the next
+            > exploratory model
+                > a more common approach now
+                > with waterfall model, may spend too much time
+                    at one level, then at a future level find out
+                    that everything is wrong.
+                > lets use all our tools at once,
+                    > start playing with a design
+                        > the computer will tell you if it's a good
+                        design
+                        > let's you explore the details of a high-level 
+                        design
+                        > some things you can't forsee in just the design
+> narrowing down search space for a bug
+    > place to start is write lots of tests for code
+    > if tests are passed, then have some constraints on 
+        what could be wrong
+    > if get something wrong and all tests pass
+        then we don't have enough tests, or a test is wrong
+        or an interaction between system's parts is 
+        incorrect
+    > if you get some sort of runtime error, a wrong value
+    passed, then turn to print statements, debuggers,
+    to look @ where you are in the code
+
+> validating your tests, if you don't have a domain expert
+    > there are two types of tests
+    > unit tests
+        > are you doing the right thing?
+    > regression tests
+        > asks has something changed?
+        > every time you make a change run them
+    > Norvig says we should have made a function to check
+        if a given solution is legal. Are all the moves in
+        a path legal???
+    > testing is a lot like scaffolding in construction, 
+        you build a lot of stuff you don't need that 
+        might need to be removed later
+> after the class is over, what does Norvig recommend?
+    > Norvig says to be driven by your own interests
+    > if you want to learn programming,
+        then do more programming
+    > find a project that you like and want to do, get
+    started, find out what you don't know, find a resource
+    to learn what's missing
+> brute force vs analysis
+    > for bridge problem, an insight is that slow people
+        go together
+    > whether you do more analysis or brute force depends
+    on the application.
+        > if you can get an answer quickly then why spend
+            so much time
+        > but if you spend the time, then you can scale up
+        to a larger problem.
+    > there are ways to give your algorithms hints instead
+    of complete solutions
+        > so you don't explore the solution space equally,
+        you write a function to estimate how far away
+        you are from the goal. And follow the leads that
+        are closer to the goal.
+        > the right technique's application depends on 
+        having the right representation for state
+> finding open source projects
+    > start one on your own
+    > if you work w/someone else, you can learn from them
+    > google summer of code
+> 

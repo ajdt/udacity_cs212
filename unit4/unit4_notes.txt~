@@ -1,0 +1,253 @@
+~~~~~~~~~~~~~~~~~~~~
+video 1 Water Pouring Problem
+~~~~~~~~~~~~~~~~~~~~
+> The problem
+    > given a set of cups of a certain capacity 
+        ( 9 oz, 4 oz, etc), and a given amount of fluid
+        how can we measure out an amount of fluid, x
+    > actions we can take:
+        > pour from 1 cup to another, from faucet to cup
+        > from cup to drain
+
+    > concept inventory
+        > cups -- have capacity & current level
+        > collections of cups
+            ** set of cups and current levels
+            represents complete state of the world
+            (i.e. where we are in the problem )
+        > goal
+        > pouring actions
+            > empty
+            > fill
+            > transfer -- two ways to do it
+                > transfer x -> y
+                    done until y is full
+                    or x is empty
+        > solution is a sequence of steps to
+            measure out the correct amount of liquid
+
+        > complexity we're trying to manage is dealing with
+        sequences that are long.
+        > This unit is about problems where the solution is
+        a sequence of steps
+
+~~~~~~~~~~~~~~~~~~~~
+video 2 Combinatorial Complexity
+~~~~~~~~~~~~~~~~~~~~
+> we've dealt with problems having a combinatorial 
+    complexity before -- zebra_puzzle, cryptarithmetic
+
+> for this case what is our combinatorial complexity if
+we have 2 cups with 4 and 9 oz capacities, a goal of 6 oz
+, and there are six possible actions to be performed?
+
+> Ans:
+    we're not picking static variables, but a sequence
+    of actions. We don't know how long the sequence is
+    just how many choices we have at each stage
+
+    all we know is that the combinatorial complexity is
+    6^x, for some x
+
+> this type of problem is a combinatorial optimization 
+    problem or a search problem
+~~~~~~~~~~~~~~~~~~~~
+video 3 Exploring the Space
+~~~~~~~~~~~~~~~~~~~~
+> Norvig calls the search problem an exploration problem
+    instead.
+> We're exploring possible solutions. The set of possible
+    states is divided into 3 subsets
+    > goal subset 
+        all states that meet the goal requirements
+    > explored subset 
+        all states that have been fully explored
+    > frontier subset
+        all states that haven't fully been explored
+> to make progress, take a frontier state and explore it
+    further
+
+> Problems to consider
+    > what if there is no solution? Program must be able
+        to find out that there is no solution
+    > finding a solution efficiently
+        means having a good strategy for exploring the
+        solution space.
+    > need a strategy for exploration so we don't loop
+        infinitely within the solution space
+
+> To ensure we eventually arrive at a solution:
+    > don't allow our search to re-explore (i.e.) go back
+        to explored states or frontier states
+    > always explore the shortest frontier path you have
+        so far. Loops still exist, but they don't stop
+        you from getting to search, just slow you down
+
+~~~~~~~~~~~~~~~~~~~~
+video 4 Pouring Solution
+~~~~~~~~~~~~~~~~~~~~
+> one more concept:
+    successors of a state
+        > the states you can get to from a given state
+            and the number of steps it takes to get there
+> the pouring solution is pretty much an implementation
+    of the concepts in our concept inventory seen earlier
+
+> Algorithm:    # by Peter Norvig
+                    (I have renamed certain vars
+                        to make program clearer)
+
+    def pour_problem(cup1, cup2, goal, start=(0,0)):
+        """cup1 and cup2 are the capacities of the
+        glasses. (x,y) is the current fill level, and
+        represents current state. The goal is a level
+        that can be in either glass. Start at the 
+        start state and follow sucessors until goal is 
+        reached. keep track of frontier and previously
+        explored; fail when there is no frontier."""
+
+        if goal in start:
+            return [start]
+
+        explored = set()    # set of visited states
+        frontier = [ [start] ] # an ordered list instead of set
+
+        while frontier:
+            path = frontier.pop(0) 
+            (x, y) = path[-1] # last visited state
+
+            for (state, action) in successors(x, y, cup1, cup2).items()
+                if state not in explored:
+                    explored.add(state)
+                    path2 = path + [action, state]
+                    if goal in state:
+                        return path2
+                    else:
+                        frontier.append(path2)
+        return Fail
+Fail = []
+
+    
+    def successors(x, y, max_x, max_y):
+        """Return a dict of {state:action} pairs 
+        describing what can be reached from the (x, y)
+        state, and how."""
+
+        # check that x and y are less maximum fill levels
+        assert x <= max_x and y <= max_y 
+
+        return { ((0, y+x) if y+x <= max_y else (x-(max_y - y), y+(max_y - y))):'X->Y',
+                ((x+y, 0) if x+y <= max_x else (x+(max_x - x), y-(max_x-x))):'X<-Y',
+                (max_x, y):'fill X', (x, max_y):'fill Y',
+                (0, y):'empty X', (x, 0):'empty Y' }
+
+~~~~~~~~~~~~~~~~~~~~
+video 5 Doctest
+~~~~~~~~~~~~~~~~~~~~
+> you can use the doctest module as an alternative way to
+    test code.
+> you define test cases in a doc string as if they were
+    the input/output to/from an interactive python session
+
+> see doctest_example.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 6 Bridge Problem
+~~~~~~~~~~~~~~~~~~~~
+> the problem
+    > have a rickety bridge a set of people P are trying to
+    cross at night. Only 2 people may cross at a time, and
+    a flashlight is necessary to cross. There's only one 
+    flashlight. For each person, p in the set P he/she
+    takes a time t(x) to cross the bridge due to physical
+    shape, fear etc.
+
+    > what combination of actions can get everyone across
+    the bridge the fastest??
+
+~~~~~~~~~~~~~~~~~~~~
+video 7 Representing State
+~~~~~~~~~~~~~~~~~~~~
+> by representing state, I think Norvig means representing
+    the current state of the problem
+> concept inventory
+    person
+    people -- 2 collections, those on the here side &
+        on the there side
+    light
+
+> representations
+    person      -- a number
+    people 
+    light
+> possible representations of people concept
+    tuple
+    list
+    set
+    frozenset
+    
+    > which choice would be ok, and which choice is hashable?
+        Hashable is important b/c our soln to the 
+        water pouring problem involved a hash map and we'll
+        probably have a similar approach
+
+    > all of the choices can represent people, 
+        but only a tuple or a frozenset are hashable.
+        The others are mutable
+~~~~~~~~~~~~~~~~~~~~
+video 8 Bridge Successors
+~~~~~~~~~~~~~~~~~~~~
+> Norvig's representation
+    > a tuple of three elements
+
+        ( here, there, t )
+
+        here = frozenset of people
+        there = trozenset of people
+        t = elapsed time
+
+    > light represented as string "light" inside one
+        of the frozen sets
+
+    > possible initial conditions:
+    ( {1, 2, 5, 10, 'light'}, {}, 0)
+
+> successors of a state
+    > people always move from the set with "light" in
+        it to the other set
+    > either one or two people can move across at a time
+    > thus with four total people on side with light,
+        there are a possible 10 successors for that state
+> asked to write bridge successors function
+    > see bridge_successors.py for my solution and later
+        Norvig's solution
+> Norvig says that maybe he made a bad choice for 
+    representation b/c his solution was wordier
+    than expected. 
+
+    A good way to refactor would be to remove 'light'
+    from the sets so they're sets of people not all
+    things on one side or the other. Using a flag
+    for 'light' instead of having it in the sets
+    would make things more concise
+
+    > a nice thing about Norvig's representation is
+    that you don't have to consider one person 
+    going across or two going across as separate cases
+
+    > everything is in flux, trying to choose a good
+    representation but changing our minds as we go along.
+    We keep changing our definition of what an action is
+
+        > this kind of flux is ok if it remains contained
+        > if uncertainties are going to cross barriers 
+        between functions, then they should be taken
+        care of. Otherwise it's not a big deal
+
+~~~~~~~~~~~~~~~~~~~~
+video 9 Paths Actions States
+~~~~~~~~~~~~~~~~~~~~
+> Asks us to create two simple functions
+    
+    def path_sta
+

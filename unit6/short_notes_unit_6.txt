@@ -1,0 +1,100 @@
+~~~~~~~~~~~~~~~~~~~~
+Bigger Coding Problems
+~~~~~~~~~~~~~~~~~~~~
+> coded a larger problem in this section
+> got practice reading lots of code
+> the problem: code an algorithm to find 
+    highest scoring play in a crossword tile game.
+
+~~~~~~~~~~~~~~~~~~~~
+Difficulties
+~~~~~~~~~~~~~~~~~~~~
+> the difficulty is not in having to create something new
+or innovative, rather it's in the size of the problem.
+
+> when faced with a large problem, the notion of PACING
+becomes important...
+> Pacing
+    > want to attack the problem, but know we won't solve 
+    it all at once
+    > set intermediate goals along the way, finish each part
+    Do each byte sized piece and then move on to the next
+    piece.
+    > otherwise there's the danger of losing focus on what
+    matters and of getting discouraged
+
+> when thinking of a complex problem, we also often thought
+about working on a simpler instance of the problem, and solving
+that first. Getting a feel for the problem in that way, and
+eventually we were able to abstract into more difficult
+instances.
+    > adding to tiles on the board, we first considered the
+    case where we append to a tile, then we came up with concepts
+    like anchor squares etc.
+
+~~~~~~~~~~~~~~~~~~~~
+Development Stages
+~~~~~~~~~~~~~~~~~~~~
+> often need to add new concept to your program or understanding
+> this requires revisiting earlier stages, you may have to 
+    revise the concept inventory done at the beginning.
+
+> we did this when introducing the concepts of prefixes/suffixes
+    in the crosswords game
+
+~~~~~~~~~~~~~~~~~~~~
+Bird By Bird
+~~~~~~~~~~~~~~~~~~~~
+> Norvig refers to the book "Bird by Bird" by Anne Lamott
+in emphasizing the idea of "pacing"
+
+~~~~~~~~~~~~~~~~~~~~
+Code Reuse
+~~~~~~~~~~~~~~~~~~~~
+> this concept isn't discussed explicitly, but
+Norvig makes great use of code reuse, by using horizontal_plays
+to produce vertical plays after transposing the board 
+
+Aside:
+    Analyze the following transpose code:
+        return map(list, zip(*matrix))
+
+~~~~~~~~~~~~~~~~~~~~
+Office Hours
+~~~~~~~~~~~~~~~~~~~~
+> steps to take after course to keep improving?
+    > other classes, pick based on interests
+    > programming on your own
+        > try to complete something
+        > open source program
+        > project euler
+> Common mistakes and suggestions
+    > reading documentation & getting familiar with
+        languages; need more familiarity
+    > when you get stuck, think:
+        "I'm stuck, it's probably because there's some
+        preconception I have that's blocking me. What
+        preconceptions do I have, and should I relax
+        one of those?"
+> tips for reading others' code and writing legible code
+    > practice. Get out there and start doing it
+    > play with code while reading it
+        > run it and try it, with an interpreter
+        > it makes things easier
+    > think of reading as more interactive, not passive
+    > how do you read it?
+        > when read code it's not from beginning to end
+        > understand why you're reading the code?
+            > are you trying to understand the whole
+            project?
+            > flip back and forth to get the big idea
+            > for interactivity it's often better to 
+            read in an IDE
+            > if you're just reading to understand one 
+            part of an API, 
+                then you just want to understand one
+                path through the code well.
+                > read more selectively
+> Recursion
+    > use when appropriate, and not, when it's not
+    > you should program in a way that's natural

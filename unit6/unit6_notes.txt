@@ -1,0 +1,577 @@
+~~~~~~~~~~~~~~~~~~~~
+video 1 Welcome Back
+~~~~~~~~~~~~~~~~~~~~
+> larger code examples in this section
+> we'll get practice reading a lot more code
+> we'll try to code an algorithm to find 
+    highest scoring play in a crossword tile game.
+
+~~~~~~~~~~~~~~~~~~~~
+video 2 Word Games
+~~~~~~~~~~~~~~~~~~~~
+> Concept Inventory
+    Board
+    Letters
+    Words
+    Hand
+    Legal Play
+    Score
+        for letters
+        for a play
+        bonus for plays
+    dictionary
+    blank tile, counts as any letter
+
+~~~~~~~~~~~~~~~~~~~~
+video 3 Implementing Concepts
+~~~~~~~~~~~~~~~~~~~~
+> Concept Inventory
+    Board
+        *** a 2D array, don't know if we need one or two.
+        One board for letters, but should bonus squares
+        be on same board or different one?
+    Letters
+        *** str
+    Words
+        *** str
+    Hand
+        *** str or list of letters ( a set wouldn't work,
+            we need to have duplicates)
+    Legal Play
+        *** a function that generates legal plays
+        *** legal play representation
+            (position, direction, 'word')
+    Score
+        for letters 
+            *** use a dictionary
+        for a play
+            *** use a function
+        bonus for plays
+            *** some mapping from position to 'double', triple
+            etc
+    dictionary
+        *** set(words)
+    blank tile, counts as any letter
+        *** str '_' or something else
+> we've got an implementation for everything, some 
+    functions we don't know how to implement yet, but
+    nothing looks like "a show stopper", so we can move
+    along.
+
+> the difficulty is not in having to create something new
+or innovative, rather it's in the size of the problem.
+
+> when faced with a large problem, the notion of pacing
+becomes important...
+> Pacing
+    > want to attack the problem, but know we won't solve 
+    it all at once
+    > set intermediate goals along the way, finish each part
+    , do each byte sized piece and then move on to the next
+    piece.
+    > otherwise there's the danger of losing focus on what
+    matters and of getting discouraged
+
+> our first step:
+    > ignore the board, focus on the hand, and dictionary
+    out of that hand, what dictionary words can we make?
+
+~~~~~~~~~~~~~~~~~~~~
+video 4 Finding Words
+~~~~~~~~~~~~~~~~~~~~
+> small file with all words in it, Norvig first reads it in
+    WORDS = set(file('words4k.txt').read().upper().split())
+
+> to find all the words within a hand Norvig defined
+
+def find_words(hand):
+    results = set()
+    # has 7 nested for loops, outermost checks for all
+    # words of length 1 that can be made, 
+    # innermost checks all words of length 7, 
+    # it's a quick and dirty solution that we'll 
+    # improve later
+
+> Norvig states that he'd like to have more tests, since
+    we'll be modifying this function a lot
+
+~~~~~~~~~~~~~~~~~~~~
+video 5 Regression Tests
+~~~~~~~~~~~~~~~~~~~~
+> wrote a test using 8 hands and their results in a 
+    dictionary
+    > the hands map to their solution
+> these tests aren't there to ensure our function does the
+right thing because it's hard to tell
+    > rather they're used to tell if a change in code
+    has changed the function's output. 
+    > this is called regression testing
+> these 8 tests also help time our function to measure
+how fast it is. 
+    > using the naive approach to find_words(), it takes
+    half a second to solve for the 8 hands
+        > Norvig says this is too slow
+> Why is find_words() so slow?
+    > it has heavy nesting, and it must go through all
+    the levels of nesting every time. Let's say first 
+    and second letters are Z and Q, then we'll go through
+    every level looking for words beginning with ZQ, even
+    though there aren't any. 
+    > There's no early termination
+~~~~~~~~~~~~~~~~~~~~
+video 6 Readwordlist
+~~~~~~~~~~~~~~~~~~~~
+> Norvig introduces a new concept
+    > NOTICE that we've had to go back to an earlier
+    stage of development and revise our concepts!
+    > the new concept isn't for correctness, but 
+    for efficiency
+
+    > the concept: Prefix
+    > we want to store a set of all possible prefixes
+        > the empty string counts as a prefix, but
+        an entire word does not.
+
+> Norvig asks us to construct the function,
+    readwordlist(filename) that returns a set of 
+    words from the file, and a set of prefixes
+
+    > see readwordlist.py for the code
+
+> now we can define a new version of find_words(),
+    like the previous, except if the word we've
+    built so far isn't a prefix, we "continue" 
+    instead of following the loop structure
+> Norvig doesn't normally like the continue statement
+    but used it to avoid having too much indentation
+    > otherwise he would have placed each for loop
+    inside an if statement that executes only if
+    our partial word is a prefix
+> Our function takes .0038 seconds about 150 times
+faster, it's a long/ugly function but it's fast 
+enough
+> still we want to improve our code because
+    > we're repeating ourselves too much
+    > our code only works for a 7 letter hand
+    > we don't take the board into account
+        > we could form a word using letters on the board
+            too
+~~~~~~~~~~~~~~~~~~~~
+video 7 Extend Prefix
+~~~~~~~~~~~~~~~~~~~~
+> to change the loop structure in find_words() we ask
+what each level is doing, and how else it might be 
+accomplished.
+    > each level is selecting one letter, adding it
+    to the prefix we have so far, and checking if
+    we've formed a word
+> we can have a recursive structure instead
+    > see recursive_find_words.py for my code
+
+    > uses a recursive helper function called
+        extend_prefix() for actual recursion
+> Norvig shows alternate implementations of find_words()
+    > in one we don't nest extend_prefix() inside find_words
+        but bring it outside, and turn the result set
+        into a third parameter.
+        > find_words acts as a wrapper to extend_prefix()
+
+        > we could also turn the prefix and set parameters
+        into optional arguments and have find_words do 
+        all the work, and recurse
+
+> Norvig mentions the zen of python by tim peters
+    > type "import this" into a python interpreter
+    > one of the aphorisms is "flat is better than
+    nested", which is the motivation for moving
+    the nested function outside
+
+> We've made good progress here, we should consider
+pacing and leave this part of the project as completed.
+    > start the next part of the journey
+
+~~~~~~~~~~~~~~~~~~~~
+video 8 Adding Suffixes
+~~~~~~~~~~~~~~~~~~~~
+> went back to concept list to figure out what's next
+    and what we've done
+
+    > we'll be trying to figure out all the plays
+    we can make by considering adding some of
+    our tiles to one letter on the board,
+    > not worried about collisions or running off the board
+    yet
+> if we consider one letter on the board only => 
+    we check if we can make a word by adding a prefix
+    to the letter, then a suffix after the letter,
+    and checking if we can form a word in this way
+> Norvig asks us to write the add_suffixes function.
+    > see add_sufixes.py for solution and commentary
+
+~~~~~~~~~~~~~~~~~~~~
+video 9 Longest Words
+~~~~~~~~~~~~~~~~~~~~
+> Norvig wants us to write a definition of longest words
+    given a definition of word_plays()
+    > see longest_words.py for code and commentary
+
+~~~~~~~~~~~~~~~~~~~~
+video 10 Words Score
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to write the word_score function
+    given that he's defined a dictionary of letter
+    scores.
+    > we don't take bonus points like double word
+    or double letter into account yet
+
+    > see word_score.py, this question was pretty simple
+
+~~~~~~~~~~~~~~~~~~~~
+video 11 Top N Hands
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to write topn()
+    which returns a list of the top n words
+    that a hand can play sorted by word score
+> see top_n_hands for code
+
+> Ben Parker tangent
+    "with great power comes great responsibility"
+    > temptation to run topn() on the official 
+    scrabble dictionary, to have absolute best plays,
+    but this gives us an unfair advantage.
+    > having strong ethics is part of being a good software 
+        engineer
+
+~~~~~~~~~~~~~~~~~~~~
+video 12 Crosswords
+~~~~~~~~~~~~~~~~~~~~
+> we are only taking one board letter into account at a 
+    time. 
+> When making a play, need to take into account collisions
+    with other words, if we overlap another word, the 
+    resulting change must still be a word
+
+~~~~~~~~~~~~~~~~~~~~
+video 13 Anchors
+~~~~~~~~~~~~~~~~~~~~
+> in scrabble: can only play a word adjacent to an existing
+square.
+> open squares next to occupied squares are called
+Anchors
+    > can only make a play if it takes up at least one 
+    anchor square
+> arbitrarily we decide that a prefix cannot contain
+    an anchor, to prevent our code from
+    reconsidering the same play multiple times, just because
+    it can be anchored in multiple places
+
+> prefixes
+    > made up of zero or more letters
+    > can't take up an anchor
+    > made up of all board or all hand letters, not
+    a mix. For a mix to occur, an anchor square
+    would have to be used
+> Say you're making a play from left to right,
+    if the anchor(s) you cover have letters above
+    or below them, there's an additional constraint
+    that the letters going in the anchors have
+    to form a valid word with the letters below and 
+    above them
+    > a similar situation is true for playing top
+    to bottom
+    > we have to write a routine that finds anchors
+    on a board and tells us which letters can be 
+    played on the anchors
+
+~~~~~~~~~~~~~~~~~~~~
+video 14 Bird By Bird
+~~~~~~~~~~~~~~~~~~~~
+> Norvig remembers Bird By Bird by Anne Lamott
+    > funny book, he says
+    > main idea take things one at a time
+> we will do something similar, taking the remaining
+    tasks one at a time:
+    1. making a play on the rows
+    2. playing on the columns
+    3. playing anywhere on the board
+    4. scoring double word, double letter
+    5. handling blanks
+
+~~~~~~~~~~~~~~~~~~~~
+video 15 Anchor Class
+~~~~~~~~~~~~~~~~~~~~
+> let's deal with a single row at a time, and
+    deal with the crosswords too.
+> row representation
+    > a list instead of a tuple or set b/c we want
+    it to be mutable, we'll be adding and removing stuff
+    > each element in the list stands for one of the 
+    squares in the row.
+    > letters are literals
+    > '.' stands for a free square
+    > '|' stands for the end of the board, so we don't
+    explicitly have to check if our word goes
+    over the edge of the board
+
+    > an anchor will be it's own class. Could just be a
+    list or tuple, but norvig wants it be clear what
+    an anchor is
+        > thus anchor is defined explicitly as a subclass
+        of a set
+        class anchor(set):
+        > we can use is instanceof(row[i], anchor) to
+        check if a square is an anchor
+
+~~~~~~~~~~~~~~~~~~~~
+video 16 Row Plays
+~~~~~~~~~~~~~~~~~~~~
+> define a function row_plays(hand,row):
+    "returns a set of legal plays in row. A play is an
+    (i, 'WORD') pair, where i is location in row."
+> in my design, I wouldn't have created legal_prefix
+as a separate function. This makes visualizing and 
+writing the row_plays solution much more difficult
+    > remember: use wishful thinking when coding,
+    think "if only I had a function that did x", and
+    proceed as if you did.
+> function legal_prefix(i, row)
+    > gives a description of legal prefixes at position
+    i for a row
+    > returns a tuple of (prefix, max_size) that gives
+    a prefix using board_letters, if there are board 
+    letters in the prefix, and the maximum allowable
+    characters for the prefix
+~~~~~~~~~~~~~~~~~~~~
+video 17 Legal Prefixes
+~~~~~~~~~~~~~~~~~~~~
+> Norvig goes through the code he wrote to find
+    the legal prefixes of a row from an anchor
+    > see row_plays.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 18 Life is Good
+~~~~~~~~~~~~~~~~~~~~
+> wrote the add_suffixes function in row_plays.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 19 Increasing Efficiency
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to increase the efficiency of row_plays
+    > currently it calls find_prefixes() once per
+    every anchor, though the value doesn't change
+    > we would like for find_prefixes() to save
+    the results of previous computations, so access is
+    faster
+> direct use of the memoization decorator wouldn't work
+    because the function is recursive. We'd end up
+    storing intermediate hand results, instead of just
+    the top-level results.
+
+> We could write a more complex decorator that does the
+    job, but I feel like using a wrapper function is best.
+
+    > see increasing_efficiency.py for code & commentary
+
+~~~~~~~~~~~~~~~~~~~~
+video 20 Show and Spell
+~~~~~~~~~~~~~~~~~~~~
+> we're closing in on a complete solution
+    > we'll now try to...
+        > handle complete boards
+        > handle all_plays() # rows, columns etc
+        > handle scoring for a play
+
+> Norvig defines the board as a function
+    > every time a_board is referenced it will be modified
+    so we want a fresh one each time
+    > not sure I understood this.
+
+> Norvig asks us to write a board printing routine
+    > see show_and_spell.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 21 Horizontal Plays
+~~~~~~~~~~~~~~~~~~~~
+> introduced a new function:
+> horizontal plays, finds plays for each row
+    horizontal_plays(hand, board) -> { ((i, j), word)}
+
+> norvig asks us to write a line of code in horizontal_plays
+    to use the results of row_plays()
+    > see horizontal_plays.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 22 All Plays
+~~~~~~~~~~~~~~~~~~~~
+> all_plays(hand, board) --> { ( (i,j), dir, word) }
+> we move onto the all_plays function
+> see all_plays.py for code
+> Norvig uses a transpose on the board so we can use 
+    horizontal_plays to get the vertical plays
+    > I had a similar instinct to rotate the matrix 90 
+    degrees, but a matrix transpose works much better
+    > since the i and j positions are just swapped
+    in a transpose, we simply have to swap back the
+    i, j positions when we get our plays back from
+    horizontal_plays. 
+    > Using a transpose is pretty smart on Norvig's part
+
+~~~~~~~~~~~~~~~~~~~~
+video 23 Set Anchors
+~~~~~~~~~~~~~~~~~~~~
+> set anchors doesn't return anything, it operates on
+an board directly. i.e. it's a function with a side-effect
+
+> uses helper function to find a square's N, S, E & W
+neighbors
+> if any neighbor is a letter, then square is an
+anchor
+    > if N or S squares are letters then we have
+    a crossword, and we use a helper method to 
+    find what that word is.
+    > the anchor can only use letters that would form valid
+    words with the board letters
+    > if N and S are not letters => the letters on the
+    anchor are unrestricted
+~~~~~~~~~~~~~~~~~~~~
+video 24 The Final Birds
+~~~~~~~~~~~~~~~~~~~~
+> Norvig shows us the find_cross_word(board, i, j)
+    helper function that helps us determine a crossword
+    for an anchor inside the set_anchors() function
+
+> code for neighbors list is also show, it's rather simple.
+
+> code for matrix transpose is given too
+    > Norvig transposes a matrix via:
+        return map(list, zip(*matrix))
+
+    > another way is...
+        [ [M[j][i] for j in range(len(M))] for i in range(len(M[0]))]
+
+> Most of norvig's tests for play family of functions
+are regression tests not unit tests
+    > regression tests tell you if a change has broken/
+    changed something
+    > unit tests tell you if something is correct or not
+    > Norvig's tests seem reasonable, but we don't know
+    if they're completely correct.
+
+~~~~~~~~~~~~~~~~~~~~
+video 25 Scoring
+~~~~~~~~~~~~~~~~~~~~
+> Norvig decides to use a second board to denote triple
+    word, double letter, and other special squares,
+    instead of squeezing it into existing board
+    representation.
+> it would become cumbersome to include this extra info
+    in the row representation we're already using b/c
+    some squares are anchors, if an anchor is a special
+    square, then we have to modify the anchor class to
+    hold information about special squares, which isn't
+    really the point of the anchor class. Basically,
+    we're storing information in the row representation
+    which isn't valuable for the part of our program
+    dealing with plays. We're coupling stuff that doesn't
+    need to be coupled.
+> Norvig also shows us a modified version of all_plays()
+and horizontal plays() that includes play score in the
+results tuples
+
+~~~~~~~~~~~~~~~~~~~~
+video 26 Scoring 2
+~~~~~~~~~~~~~~~~~~~~
+> Norvig shows us his calculate score function
+> it's a lot of code, hard to keep track of
+
+> see scoring.py for more commentary
+> Norvig does a great job of reusing code for
+the cross_word_score() function take a look @ this more
+closely!!!
+
+~~~~~~~~~~~~~~~~~~~~
+video 27 Making the Board
+~~~~~~~~~~~~~~~~~~~~
+> Norvig shows us some really cool code for making
+the bonus board. Since it's symmetric, Norvig only explicitly
+describes one quadrant, then mirrors the quadrant to 
+make the entire board.
+> see making_the_board.py for details
+> Norvig asks us to make a print board function that
+will print bonus symbols when a square is empty
+    > see making_the_board.py for details
+
+~~~~~~~~~~~~~~~~~~~~
+video 28 Making Plays
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to write code to modify a board by
+    performing a play, then return the board
+> see making_plays.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 29 Best Play
+~~~~~~~~~~~~~~~~~~~~
+> given a hand and a board return the highest scoring play
+> if there isn't one just return None
+
+> see best_play.py for my code
+
+
+~~~~~~~~~~~~~~~~~~~~
+Office Hours
+~~~~~~~~~~~~~~~~~~~~
+> steps to take after course to keep improving?
+    > other classes, pick based on interests
+    > programming on your own
+        > try to complete something
+        > open source program
+        > project euler
+> Common mistakes and suggestions
+    > reading documentation & getting familiar with
+        languages; need more familiarity
+    > read carefully
+    > when you get stuck, think:
+        "I'm stuck, it's probably because there's some
+        preconception I have that's blocking me. What
+        preconceptions do I have, and should I relax
+        one of those?"
+> tips for reading others' code and writing legible code
+    > practice. Get out there and start doing it
+    > play with code while reading it
+        > run it and try it, with an interpreter
+        > it makes things easier
+        > when you want an example etc.
+    > think of reading as more interactive, not passive
+    > how do you read it?
+        > when read code it's not from beginning to end
+        > understand why you're reading the code?
+            > are you trying to understand the whole
+            project?
+            > flip back and forth to get the big idea
+            > for interactivity it's often better to 
+            read in an IDE
+            > if you're just reading to understand one 
+            part of an API, 
+                then you just want to understand one
+                path through the code well.
+                > read more selectively
+> why structure so much of the course around games?
+    > so we get an idea of understanding a set of rules
+    and following them.
+    > real world problems are more complicated and messy
+        > games offer a nice abstraction, but they're
+        still complicated
+
+    > for a real world problem, we'd have to spend all 7
+    weeks on that one problem.
+
+> Recursion
+    > use when appropriate, and not, when it's not
+    > some languages only have recursion, not iteration
+        > Norvig doesn't like this, 
+            you should program in a way that's natural
+
+     > some good cases for recursion
+        > dealing with a recursive data structure, like a
+        tree
+            > recursion is built into the definition

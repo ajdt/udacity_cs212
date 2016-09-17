@@ -1,0 +1,195 @@
+~~~~~~~~~~~~~~~~~~~~
+Intro
+~~~~~~~~~~~~~~~~~~~~
+ 
+> Quick and dirty calculation is important for programmers, 
+    lets us be lazy.
+
+> This class is about managing complexity, 
+    sometimes it's easier just to leave complexity out all together.
+
+> We'll learn how to make things more efficient, when to stop, and 
+    how to do the back of the envelope calculations to evaluate 
+    efficiency
+
+
+~~~~~~~~~~~~~~~~~~~~
+Zebra Puzzle
+~~~~~~~~~~~~~~~~~~~~
+> Back of the envelope calculations and optimizations looked at
+    through the zebra puzzle example
+
+> Zebra Puzzle:
+    > Concept Inventory:
+        need an association of properties into groups some
+        properties are mutually exclusive ( can't have a house
+        be both red and white)
+    > Approach:
+        > Deduce the right assignment?
+            -- don't know how this would work
+        > try all possibilities ?
+            -- not much work, let computer do all the heavy lifting
+    > Calculations
+        > with 5 groups (colors, nationality...), 
+        each having 5 elements, there's 5!^5 distinct ways to
+        assign each element into 1 of 5 sets
+
+        Naive algorithm takes 1 hour to complete
+
+    > Algorithm:
+
+    import itertools
+    houses = [1, 2, 3, 4, 5]
+    orderings = list(itertools.permutations(houses))
+    for (red, green, ivory, yellow, blue) in orderings:
+        for( Englishman, Spaniard, Ukranian, Japanese, Norwegian) in orderings:
+            for (dog, snails, fox, horse, ZEBRA) in orderings:
+                for (coffee, tea, milk, oj, WATER) in orderings:
+                    for (OldGold, Kools, Chesterfields, LuckyStrike, Parliaments) in orderings:
+                        # constraints go here
+
+    > Complete Algorithm
+        > uses a generator expression
+
+def zebra_puzzle():
+    "Return a tuple (WATER, ZEBRA) indicating their house numbers."
+    houses = first, _, middle,_, _ = [1, 2, 3, 4, 5]
+    orderings = list(itertools.permutations(houses)) 
+    return next((WATER, ZEBRA)
+            for (red, green, ivory, yellow, blue) in orderings
+            for (Englishman, Spaniard, Ukranian, Japanese, Norwegian) in orderings
+            for ( dog, snails, fox, horse, ZEBRA) in orderings
+            for (coffee, tea, milk, oj, WATER) in orderings
+            for (OldGold, Kools, Chesterfields, LuckyStrike, Parliament) in orderings
+
+            if Englishman is red
+            if Spaniard is dog
+            if coffee is green
+            if Ukranian is tea
+            if imright(green, ivory)
+            if oldGold is snails
+            if Kools is yellow
+            if milk is middle
+            if Norwegian is first
+            if nextto(Chesterfields, fox)
+            if nextto(Kools, horse)
+            if LuckyStrike is oj
+            if Japanese is Parliaments
+    )
+
+    > Optimization
+        > moved constraints up, to the earliest point that they 
+        can be checked. When an invalid assignment is made, we
+        catch it as early as possible
+        > program finishes in under 1 minute now, instead of 1 hr
+
+~~~~~~~~~~~~~~~~~~~~
+Generator Expression
+~~~~~~~~~~~~~~~~~~~~
+> syntax:
+   ( term for-clause optional_for_if_clauses ) 
+
+> like a list comprehension "[]" means list, "()" means
+    generator expression.
+> it's a promise, not evaluated right away, only as values
+    needed -- lazy evaluation
+> Accessing
+    next( generator_expression ) --> next value is retured
+        > if no values left, then StopIteration exception
+    > use inside for-loop or convert to list, to avoid StopIteration
+
+~~~~~~~~~~~~~~~~~~~~
+Timing Functions
+~~~~~~~~~~~~~~~~~~~~
+> in timing we go from being a mathematical discipline to being
+    a science, thus, we must repeat our measurements to ensure
+    we get good values
+
+~~~~~~~~~~~~~~~~~~~~
+Aspect Oriented Programming
+~~~~~~~~~~~~~~~~~~~~
+> different aspects to designing a program
+    > Correctness
+    > Efficiency
+    > Debugging process
+
+    * often have an interleaved mess of "code just for correctness",
+    "code just for efficiency", and "code for debugging"
+
+    > try to separate these out as much as possible
+        (Aspect Oriented Programming)
+> Example
+    > add bookkeeping nodes to zebra_puzzle() to count number of 
+        assignments that occur w/out disturbing the original 
+        program structure too much.
+
+    > solution:
+        > Norvig wraps every use of ordering with a function
+        call c()
+~~~~~~~~~~~~~~~~~~~~
+Cryptarithmetic Example
+~~~~~~~~~~~~~~~~~~~~
+> example : ODD + ODD = EVEN
+> Another example where we can eliminate complexity by avoiding it
+
+    > Concept inventory:                                representation
+        > equations                                     str
+            > original -- letters                       str
+            > filled in  -- digits                      str
+        > letters                                       'D'
+        > digits                                        '3'
+        > assignment                                    table 'D' => '3', call str.translate
+            letter => digit ( assign letter to digit)
+        > evaluation                                    eval function
+            -- accuracy of filled in equation
+
+    > Approach:
+        > try to encode rules of arithmetic (+ - / *)
+            > too complicated
+        > try all possibilities ?
+    > Calculations
+        > there's at most 10 distinct letters in such a puzzle
+            at most 10! different possibilities. Takes about a
+            minute
+    > Design
+        > represent puzzle as a string 'ODD + ODD = EVEN'
+        > fill in all permutations using str.translate() to 
+        replace letters with numbers
+
+        > use the eval function to evaluate the resulting string
+
+    > Optimization
+        > profiling reveals that eval() usage is slowest part
+        of program, make faster by using eval() fewer times
+        > Norvig suggests using a lambda function to preserve
+        structure of the expression we're trying to eval.
+        > eval now returns a lambda function that takes letter
+        values as input, and checks if the values make the 
+        expression valid
+
+        > see long notes for more detail
+~~~~~~~~~~~~~~~~~~~~
+Profiling
+~~~~~~~~~~~~~~~~~~~~
+> How
+    $ python -m cProfile <file_to_profile.py>
+
+    > gives a table of profile data
+
+    > or from inside python we can do:
+        import cProfile
+        cProfile.run('function_to_profile()')
+~~~~~~~~~~~~~~~~~~~~
+Recap
+~~~~~~~~~~~~~~~~~~~~
+> new python features
+    > list comprehensions
+    > generator expressions
+    > generator functions
+    > handling types "polymorphism" timed calls, int or float passed in
+    > eval function
+> instrumentation
+    > timing with time.clock() and timedcalls() function
+    > counting c -- variable naming conventions, c was only used
+        for debugging purposes, short b/c it would be deleted/added frequently
+    > short names for things that don't persist are ok.

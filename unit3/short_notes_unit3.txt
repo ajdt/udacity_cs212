@@ -1,0 +1,73 @@
+~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~~~~~~~~
+> Our tools get better and better over time
+> "The poor craftsman blames his tools"
+    > the tools become a part of you if you're a good
+        craftsman & you learn what to do with them
+> We'll be learning about software tools in this section
+
+> first tool is LANGUAGE
+> second tool is functions
+    > new techniques for using functions that are
+        more general and malleable than others
+
+~~~~~~~~~~~~~~~~~~~~
+Language
+~~~~~~~~~~~~~~~~~~~~
+> to stay closer to the language of a problem
+    we can often solve a problem by writing a domain specific
+    language, and the associated compiler/interpreter.
+> for evaluating a pattern against many input strings, it's
+much more efficient to compile pattern than to use an interpreter.
+    > b/c interpreter operates on the pattern every time as if it
+    were a new pattern
+> often it's useful to proceed as if you already had the language 
+you desire to describe/solve the problem you're looking to solve
+~~~~~~~~~~~~~~~~~~~~
+Functions
+~~~~~~~~~~~~~~~~~~~~
+
+> remember functions are more composable than other language
+    features. Can be composed dynamically ex: f(g(x)) without
+    having to hard-code it.
+
+    > this feature of functions allows us to write memoization
+    functions, trace functions etc. as decorators
+
+> functions allow us control over time, to package a set of 
+    computations for later, or do them now
+
+~~~~~~~~~~~~~~~~~~~~
+Refactoring Considerations
+~~~~~~~~~~~~~~~~~~~~
+Factors to consider:
+1) is the change backward compatible, so change is only
+    local? If so changes are reduced, this is a good
+    property to have.
+2) is the change internal or external, changing something
+    on the inside( generally backwards compatible),
+    or changing interface to the outside world?
+~~~~~~~~~~~~~~~~~~~~
+Summary
+~~~~~~~~~~~~~~~~~~~~
+> This unit was about tools,
+    > build useful tools, recognize what they are
+    > apply them to a component of a domain
+> Useful tools
+    > language
+            > define your own, if programming language
+            doesn't suit the problem at hand
+        > grammars, interpreters, compilers
+    > functions
+        > powerful in a way that statements aren't
+        > composable, one function, it's an object.
+            change once and see changes everywhere.
+            by contrast statements must be copied/pasted
+            to be used more than once
+        > decorators as functions
+        > functions as objects
+
+> Norvig stresses in his office hours lecture to program
+    at the level of the problem. Get as close to the problem as
+    possible. Incidentally, you have to code with a language.

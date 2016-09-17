@@ -1,0 +1,627 @@
+Unit 1 takes us through writing a poker program to illustrate
+some basic programming design concepts.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3 Steps to writing any program:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1)  Understand the problem -- the terms being dealt with.
+        Application environment, terms, interactions etc.
+
+        ex: in Poker game, we understand that we must
+        represent hands, and cards which have ranks and suits
+        each hand having 5 cards
+
+2)  Specify what your project/solution is supposed to do
+    What types of data do we need to store, use etc..?
+    What types of functions must we provide?
+
+    ex: Our project must deal a variable number of 5 card
+    hands, then be able to determine which is the highest
+    ranking hand
+
+3)  Design and code. Create a design plan for the software
+    system and implement the plan.
+
+    ex: we have a function "poker(hands) => hand"
+    and a function "hand_rank(hand) => rank_of_hand"
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> Each part of a specification needs to become an implementation
+    and a test. Tests are needed so you know you've met the
+    specifications. If things are done right, or if future tests
+    break something, it becomes easy to tell
+
+    ** a good programmer is a good tester too!
+
+> TIP: Test extreme values. In the poker game, if we pass
+    an empty list to the poker() function what happens? 
+    Error on empty list? What if there's 100 hands?
+
+> In python to write a test:
+
+    def test_function():
+        # do some test cases
+        assert <some true statement>
+        return "test passes"
+
+> Computing VS Doing
+    There are two types of functions:
+
+    Computing   (ex: sqrt, sin) create a new value ( aka pure functions)
+    Doing       shuffle         do something to the state of the world
+                                more like a subroutine than a real function
+
+    > computing functions are easier to test. 
+    > Testing a doing function involves setting up the right state, running
+    a function, then checking the state again. The more state we have the
+    more trouble to setup and to test.
+    > Stick to "doing" functions only when necessary
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+General Programming Tips
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> reuse code as much as possible. Video 17 has great use of built-in 
+    python functions like "set" and "max"
+> Check if the language or a library already does something you need.
+    ex: using python list's built-in count method, instead of manually
+    counting the number of occurrences of a value.
+> Also reuse your own code as much as possible. 
+> Understand the language you're using well. Understand it's limitations
+    and what it does well.
+
+    Ex: Norvig's solution to the deal function makes use of array slices
+    a convenient python feature that reduces the amount of code written.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Refactoring 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> A CHANGE IN CODE SHOULD BE PROPORTIONAL TO CHANGE IN CONCEPTUALIZATION !
+    > Ex: to hande an Aces-low straight we could change the card_rank(),
+    straight(), or hand_rank() functions. By changing the card_rank() to
+    deal with the special case, we minimized the number of changes. The
+    hand_rank function assigning value to a hand could stay the same.
+
+    > Ex2: For handling ties we changed the poker() function to 
+    deal with a list of best hands, not just one hand, and created
+    a function called allMax to return all the maximal hands. 
+    An example of code change proportional to conceptualization change.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Dimensions of Programming
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> Programming problems involve a specific area that evolves over time.
+   A multi-dimensional point.
+
+   The dimensions: (efficiency, features, elegance, correctness)
+
+> Over time position changes as we add features, fix bugs,
+    or increase efficiency.
+> changing elegance makes programs easier to maintain, modify etc.
+    "It buys you time for later on"
+
+> "the best is the enemy of the good." -- Voltaire
+    Striving for perfection in correctness might be a waste of time
+    better used in one of the other dimensions. Learn to choose the right 
+    trade-offs.
+> Moving along the elegance axis is refactoring
+    ex: we got rid of the if-statement chain in hand_rank by using a
+    dictionary instead.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Lessons Summary
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1) Understand the Problem   -- define the pieces of the problem and
+    figure out what you have to represent.
+2) Reuse code as much as you can
+3) Test your code. This ensures that your program does what is right
+    and meets the criteria.
+4) Explore the design space and all the dimensions. Decide where you 
+    want to be in the design space. Stop when you believe you're there.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Office Hours 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> How much research done when you start a new project?
+    2 levels:
+    low-level tools, built-in functions and data sets. Learn
+    what's available, keep reminding yourself about the core functionality.
+    It's normal to look at the documentation constantly
+
+    For larger pieces of code: ex: web-server, parsing e-mail.
+    For big jobs try to find the right module etc.
+
+    Always look for what you have to write and what might have been
+    written before.
+> keep in mind multiple solutions to a given problem. Norvig wants
+    us to consider our solution vs others. Do some introspection on
+    the code, look @ the tricks others have done.
+
+    Every advanced feature in a programming language is there because
+    somebody suffered in the past, and a better way was consequently made.
+    If you suffer b/c you don't know about a feature, then you get to 
+    see that the feature is important. You have learned something.
+
+> Evaluating two solutions equal correctness/runtime?
+    Code should be clear and express what you want to do.
+    The code that reads the most like English is best. Because
+    we know we're going to be successful in our communication.
+    There should be a clear 1:1 mapping between code and english
+    description.
+
+    Programs can fail to communicate what you want b/c they're too
+    short or too long. Need to develop the right taste for this.
+
+> A top-down approach to programming. VS a bottom up
+    > A lot of the choices of where to start depend on the domain,
+    and where you are clear and what you don't understand.
+
+    > if you have good clarity of the top-level concepts, then
+    starting from top-down is better.
+
+    > if you don't have good top-level knowledge, you might look
+    at the pieces, how they fit together, and build up a solution
+    from the bottom up. Try to understand a bit at a time.
+
+    Never be afraid to follow wishful thinking: if only I had
+    a function that did x, then I could...
+
+> Advice for current students in computer science
+    Things are more accessible now than ever before. 
+    Keep finding other people to bounce ideas off of, and learn
+    from them.
+
+Unit 2
+~~~~~~~~~~~~~~~~~~~~
+Intro
+~~~~~~~~~~~~~~~~~~~~
+ 
+> Quick and dirty calculation is important for programmers, 
+    lets us be lazy.
+
+> This class is about managing complexity, 
+    sometimes it's easier just to leave complexity out all together.
+
+> We'll learn how to make things more efficient, when to stop, and 
+    how to do the back of the envelope calculations to evaluate 
+    efficiency
+
+~~~~~~~~~~~~~~~~~~~~
+Zebra Puzzle
+~~~~~~~~~~~~~~~~~~~~
+> Back of the envelope calculations and optimizations looked at
+    through the zebra puzzle example
+
+> Zebra Puzzle:
+    > Concept Inventory:
+        need an association of properties into groups some
+        properties are mutually exclusive ( can't have a house
+        be both red and white)
+    > Approach:
+        > Deduce the right assignment?
+            -- don't know how this would work
+        > try all possibilities ?
+            -- not much work, let computer do all the heavy lifting
+    > Calculations
+        > with 5 groups (colors, nationality...), 
+        each having 5 elements, there's 5!^5 distinct ways to
+        assign each element into 1 of 5 sets
+
+        Naive algorithm takes 1 hour to complete
+
+~~~~~~~~~~~~~~~~~~~~
+Timing Functions
+~~~~~~~~~~~~~~~~~~~~
+> in timing we go from being a mathematical discipline to being
+    a science, thus, we must repeat our measurements to ensure
+    we get good values
+
+~~~~~~~~~~~~~~~~~~~~
+Aspect Oriented Programming
+~~~~~~~~~~~~~~~~~~~~
+> different aspects to designing a program
+    > Correctness
+    > Efficiency
+    > Debugging process
+
+    * often have an interleaved mess of "code just for correctness",
+    "code just for efficiency", and "code for debugging"
+
+    > try to separate these out as much as possible
+        (Aspect Oriented Programming)
+> Example
+    > add bookkeeping nodes to zebra_puzzle() to count number of 
+        assignments that occur w/out disturbing the original 
+        program structure too much.
+
+    > solution:
+        > Norvig wraps every use of ordering with a function
+        call c()
+
+~~~~~~~~~~~~~~~~~~~~
+Cryptarithmetic Example
+~~~~~~~~~~~~~~~~~~~~
+> example : ODD + ODD = EVEN
+> ** Another example where we can eliminate complexity by avoiding it
+
+    > Concept inventory:                                representation
+        > equations                                     str
+            > original -- letters                       str
+            > filled in  -- digits                      str
+        > letters                                       'D'
+        > digits                                        '3'
+        > assignment                                    table 'D' => '3', call str.translate
+            letter => digit ( assign letter to digit)
+        > evaluation                                    eval function
+            -- accuracy of filled in equation
+
+    > Approach:
+        > try to encode rules of arithmetic (+ - / *)
+            > too complicated
+        > try all possibilities ?
+    > Calculations
+        > there's at most 10 distinct letters in such a puzzle
+            at most 10! different possibilities. Takes about a
+            minute
+    > Design
+        > represent puzzle as a string 'ODD + ODD = EVEN'
+        > fill in all permutations using str.translate() to 
+        replace letters with numbers
+
+        > use the eval function to evaluate the resulting string
+
+    > Optimization
+        > profiling reveals that eval() usage is slowest part
+        of program, make faster by using eval() fewer times
+        > Norvig suggests using a lambda function to preserve
+        structure of the expression we're trying to eval.
+        > eval now returns a lambda function that takes letter
+        values as input, and checks if the values make the 
+        expression valid
+
+        > see long notes for more detail
+Unit 3
+~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~~~~~~~~
+> Our tools get better and better over time
+> "The poor craftsman blames his tools"
+    > the tools become a part of you if you're a good
+        craftsman & you learn what to do with them
+> We'll be learning about software tools in this section
+
+> first tool is LANGUAGE
+> second tool is functions
+    > new techniques for using functions that are
+        more general and malleable than others
+
+~~~~~~~~~~~~~~~~~~~~
+Language
+~~~~~~~~~~~~~~~~~~~~
+> to stay closer to the language of a problem
+    we can often solve a problem by writing a domain specific
+    language, and the associated compiler/interpreter.
+> for evaluating a pattern against many input strings, it's
+much more efficient to compile pattern than to use an interpreter.
+    > b/c interpreter operates on the pattern every time as if it
+    were a new pattern
+> *** often it's useful to proceed as if you already had the language 
+you desire to describe/solve the problem you're looking to solve
+
+~~~~~~~~~~~~~~~~~~~~
+Functions
+~~~~~~~~~~~~~~~~~~~~
+
+> remember functions are more composable than other language
+    features. Can be composed dynamically ex: f(g(x)) without
+    having to hard-code it.
+
+    > this feature of functions allows us to write memoization
+    functions, trace functions etc. as decorators
+
+> functions allow us control over time, to package a set of 
+    computations for later, or do them now
+
+~~~~~~~~~~~~~~~~~~~~
+Refactoring Considerations
+~~~~~~~~~~~~~~~~~~~~
+Factors to consider:
+1) is the change backward compatible, so change is only
+    local? If so changes are reduced, this is a good
+    property to have.
+2) is the change internal or external, changing something
+    on the inside( generally backwards compatible),
+    or changing interface to the outside world?
+~~~~~~~~~~~~~~~~~~~~
+Summary
+~~~~~~~~~~~~~~~~~~~~
+> This unit was about tools,
+    > build useful tools, recognize what they are
+    > apply them to a component of a domain
+> Useful tools
+    > language
+            > define your own, if programming language
+            doesn't suit the problem at hand
+        > grammars, interpreters, compilers
+    > functions
+        > powerful in a way that statements aren't
+        > composable, one function, it's an object.
+            change once and see changes everywhere.
+            by contrast statements must be copied/pasted
+            to be used more than once
+        > decorators as functions
+        > functions as objects
+
+> **** Norvig stresses in his office hours lecture to program
+    at the level of the problem. Get as close to the problem as
+    possible. Incidentally, you have to code with a language.
+
+Unit 4
+~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~~~~~~~~
+> here we deal with problems whose solution is a 
+    sequence of steps
+> dealing with search problems:
+    > Norvig calls them exploration problems
+    > have a goal subset, an explored subset, and a 
+    frontier subset, all are subsets of the set of
+    possible states we could be in.
+> Search
+    > some problems require search to be solved
+    > different kinds of search
+    > a gigantic field, we only touched on a few basic
+    searches
+    > we covered
+        > shortest-path & least-cost
+> search is subtle
+> Bugs
+    > where there's subtlety there's likely to be bugs
+
+> to combat Bugs
+    > lots tests
+    > standardized tools (re-use as much as possible)
+> generalize 
+    > part of reuse is generalization
+    > look @ a specific problem, and find the
+    parts that you'll use over and over again.
+
+    > break up the problem into two parts:
+        > current problem
+        > a general problem
+~~~~~~~~~~~~~~~~~~~~
+Flux When Coding
+~~~~~~~~~~~~~~~~~~~~
+> While doing bridge problem:
+    > everything is in flux, trying to choose a good
+    representation but changing our minds as we go along.
+    We keep changing our definition of what an action is
+
+        > this kind of flux is ok if it remains contained
+        > if uncertainties are going to cross barriers 
+        between functions, then they should be taken
+        care of. Otherwise it's not a big deal
+
+~~~~~~~~~~~~~~~~~~~~
+The Lesson of Generalizing
+~~~~~~~~~~~~~~~~~~~~
+> writing/debugging our bridge problem solution,demonstrated
+    the need for generalization.
+    > search is error prone, and tricky, it's inefficient to 
+    rewrite it for every use required. instead we wrote
+    a general version of search
+
+Unit 5
+~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~~~~~~~~
+> the class is all about managing complexity
+    > many programs deal with complexity by ruling out
+    uncertainty
+    > easy, but constrains what you can do
+> we'll learn about how the laws of probability can
+    help your programs deal with uncertainty
+    > can allow uncertainty in actions or what you know
+    about your world, but still use laws of probability
+    to figure out what the right thing to do is.
+
+> often probability arises in search problems?
+    > How?
+        > two possible ways
+            > we can start at any one of a set
+            of start states
+            > we don't know ahead of time what
+                the effect of an action will be.
+                We could end up in a different
+                result state than intended
+> Our exploration uses the dice game: PIG
+
+~~~~~~~~~~~~~~~~~~~~
+Making Code More Explicit
+~~~~~~~~~~~~~~~~~~~~
+> Norvig states that he's worried about our state tuple
+    being too long ( 4 elements ).
+> a better alternative to maintain clarity is a NamedTuple
+    > gives a name to a tuple and it's elements, kind
+    of like a struct.
+> unfortunately, since we're just at the razor's edge of
+    readability with our state, and b/c NamedTuples add
+    a lot of verbosity, we chose to use just regular tuples
+
+~~~~~~~~~~~~~~~~~~~~
+Dependency Injection
+~~~~~~~~~~~~~~~~~~~~
+> how do we test when there's a non-deterministic element
+    to a function?
+    > use dependency injection
+    > inject some deterministic values
+> dependency injection
+    > we affect something that a function calls or relies on
+
+~~~~~~~~~~~~~~~~~~~~
+Program analysis
+~~~~~~~~~~~~~~~~~~~~
+> with respect to optimal pig strategy...
+> in this analysis our design choices paid off
+    > we built from the ground up, so at the bottom
+    we have a lot of useful tools, to help analyse the
+    situation. We can put them together in different
+    ways to analyse our strategies or do something else.
+
+    Often it's good to build components along the way,
+    so we can code our main goal, but also use the pieces
+    for something else if necessary
+> Norvig describes the power of breaking things up between
+    what is happening ( the in-game rules, situation etc) 
+    and maximizing 
+    > In this way, we can write a program that maximizes
+    without having to encode the rules of the game into
+    the decision process ( i.e. when your in such and
+    such state do this).
+> exploration is a big part too
+    > didn't just build a big program to do one thing
+    > we built a set of tools instead
+    > when we needed to do something else with these tools
+        it was easy
+~~~~~~~~~~~~~~~~~~~~
+Simulation Vs. Enumeration
+~~~~~~~~~~~~~~~~~~~~
+> two ways of dealing with probability
+    > randomly sample until we have a large enough data
+    set and hope that it's representative of the whole
+        > simluation
+        > norvig claims we've been doing this, I don't know
+        how
+> enumerate all possibilities and do an analysis for
+    the probabilities you're interested in.
+~~~~~~~~~~~~~~~~~~~~
+Summary
+~~~~~~~~~~~~~~~~~~~~
+> probability helps us deal with uncertainty
+> we can search with uncertainty
+    > utility lets us do this by providing the best-action
+    >  utility separates the how from the what
+        > don't have to tell computer how to find best
+        answer
+        > just state what the situation is, and it finds
+        the best answer (using utility as a guideline )
+> simulation
+    > making repeated random choices, and counting up
+        results
+> enumeration
+    > for when we have few possibilities
+
+> inject functionality into a function by
+    sneaking it in on top of one of the arguments
+    > part of aspect oriented programming
+        Keep printing/debugging separate from
+        main logic
+> exploratory data analysis is possible if we
+    have a good design.
+
+Unit 6
+~~~~~~~~~~~~~~~~~~~~
+Bigger Coding Problems
+~~~~~~~~~~~~~~~~~~~~
+> coded a larger problem in this section
+> got practice reading lots of code
+> the problem: code an algorithm to find 
+    highest scoring play in a crossword tile game.
+
+~~~~~~~~~~~~~~~~~~~~
+Difficulties
+~~~~~~~~~~~~~~~~~~~~
+> the difficulty is not in having to create something new
+or innovative, rather it's in the size of the problem.
+
+> when faced with a large problem, the notion of PACING
+becomes important...
+> Pacing
+    > want to attack the problem, but know we won't solve 
+    it all at once
+    > set intermediate goals along the way, finish each part
+    Do each byte sized piece and then move on to the next
+    piece.
+    > otherwise there's the danger of losing focus on what
+    matters and of getting discouraged
+
+> when thinking of a complex problem, we also often thought
+about working on a simpler instance of the problem, and solving
+that first. Getting a feel for the problem in that way, and
+eventually we were able to abstract into more difficult
+instances.
+    > adding to tiles on the board, we first considered the
+    case where we append to a tile, then we came up with concepts
+    like anchor squares etc.
+
+~~~~~~~~~~~~~~~~~~~~
+Development Stages
+~~~~~~~~~~~~~~~~~~~~
+> often need to add new concept to your program or understanding
+> this requires revisiting earlier stages, you may have to 
+    revise the concept inventory done at the beginning.
+
+> we did this when introducing the concepts of prefixes/suffixes
+    in the crosswords game
+
+~~~~~~~~~~~~~~~~~~~~
+Bird By Bird
+~~~~~~~~~~~~~~~~~~~~
+> Norvig refers to the book "Bird by Bird" by Anne Lamott
+in emphasizing the idea of "pacing"
+
+~~~~~~~~~~~~~~~~~~~~
+Code Reuse
+~~~~~~~~~~~~~~~~~~~~
+> this concept isn't discussed explicitly, but
+Norvig makes great use of code reuse, by using horizontal_plays
+to produce vertical plays after transposing the board 
+
+Aside:
+    Analyze the following transpose code:
+        return map(list, zip(*matrix))
+
+~~~~~~~~~~~~~~~~~~~~
+Office Hours
+~~~~~~~~~~~~~~~~~~~~
+> steps to take after course to keep improving?
+    > other classes, pick based on interests
+    > programming on your own
+        > try to complete something
+        > open source program
+        > project euler
+> Common mistakes and suggestions
+    > reading documentation & getting familiar with
+        languages; need more familiarity
+    > when you get stuck, think:
+        "I'm stuck, it's probably because there's some
+        preconception I have that's blocking me. What
+        preconceptions do I have, and should I relax
+        one of those?"
+> tips for reading others' code and writing legible code
+    > practice. Get out there and start doing it
+    > play with code while reading it
+        > run it and try it, with an interpreter
+        > it makes things easier
+    > think of reading as more interactive, not passive
+    > how do you read it?
+        > when read code it's not from beginning to end
+        > understand why you're reading the code?
+            > are you trying to understand the whole
+            project?
+            > flip back and forth to get the big idea
+            > for interactivity it's often better to 
+            read in an IDE
+            > if you're just reading to understand one 
+            part of an API, 
+                then you just want to understand one
+                path through the code well.
+                > read more selectively
+> Recursion
+    > use when appropriate, and not, when it's not
+    > you should program in a way that's natural

@@ -1,0 +1,5 @@
+for some reason the JSON parser was most difficult for me,
+but it really showed me the value of being able to
+trace through the execution of a function.
+This really aided me in debugging my program
+and is very convenient to implement

@@ -1,0 +1,1061 @@
+video 1 Introduction
+-------------------------
+> Our tools get better and better over time
+> "The poor craftsman blames his tools"
+    > the tools become a part of you if you're a good
+        craftsman & you learn what to do with them
+> We'll be learning about software tools in this section
+
+> first tool is LANGUAGE
+> second tool is functions
+    > new techniques for using functions that are
+        more general and malleable than others
+
+video 2 Language
+-------------------------
+> Python // background discussion
+    statements
+    expressions
+    > subparts that seem like a different language
+        ex: format strings have a particular syntax
+    > parts of language you can define
+        ex: classes w/ operator overloading
+        > can define a domain specific language too
+        ex: define a specific language for a particular
+            problem & write problem description in that
+            language
+
+> In this unit, we learn:
+    > what is a { langauge, grammar, compiler, interpreter}
+    > how to use languages as a design tool
+
+
+video 3 Regular Expressions
+-------------------------
+> starting with a familiar language to us
+
+> a grammar is a description of a language
+> a language is a set of strings
+
+> we're going to describe a grammar more concisely(
+    sometimes they get rather long) as an API
+
+    > API -- application programming interface
+
+        lit(s)  -- ex: lit('a') describes the language {a}
+        seq(x, y) -- seq(lit('a'), lit('b')) describes {ab}
+        alt(x, y) -- alt(--, --) --->  {a, b}
+        star(x)     ---> star(lit('a')) {"", a, aa, aaa...}
+        oneOf(c)   ---> Oneof('abc') ----> { a, b, c}
+        eol       ---> matches end of char string
+                    seq(lit('a'), eol) ---> {a}
+        dot     dot()           matches any char {a, b, c...}
+
+video 4 Specifications
+-------------------------
+> use "re" for python, but we are doing our own reg 
+    expressions to show what it's like to write your own
+    language processor.
+> wrote the following test function
+    > acts as a specification
+    > has some assertions to test the search and match 
+    functions
+    <! ******** INSERT TEST FUNCTION HERE ****** -->
+> search(pattern, text)  ---> 'str'
+    > str is earliest match in a string for the pattern
+    > if multiple matches @ same location returns the longest
+> match(pattern, text)      ---> 'str'
+    > only matches @ the start of the string
+    > match('def', 'abcdef') --> None
+    > match( 'def', 'def somefunc()') ---> 'def'
+
+> Our test function describes what we want our code to
+    do.
+
+video 5 Concept Inventory
+-------------------------
+> Concepts
+    > Pattern
+    > Text 
+    > result
+    > partial result -- represent as a set of remainders
+            after we've matched part of the string
+    > control over the iteration ( some control over how
+        we apply the reg expression matching)
+        ex: star('a')  = { "", a, aa, aaa...}
+        for string "aaa", we need a way to control which
+        string in the language star('a') we use to match
+        the input string
+        
+> we will define an auxillary function
+    matchset(pattern, text)
+        "returns a set of remainders"
+    > we pass part of the regular expression to the matchset
+    function and it returns a set of remainders to apply
+    to the rest of the reg ex formula.
+    > we call matchset with a pattern and it returns all the
+        possible substrings left over once the pattern
+        has consumed parts of the string. It's a set b/c
+        a pattern can match different sized portions of
+        a string ( star('a') can match aa or a or "" in aab )
+
+video 6 Matchset
+-------------------------
+> We filled in the matchset definition 
+    > see matchset.py
+
+
+> returning a {} means an unsuccessful match, matching {""}
+    @ the end means a successful match, we've consumed
+    all of a string
+
+video 7 Filling Out the API
+-------------------------
+> In this section we fill out the reg ex api by
+    defining the functions star, plus, alt, and eol
+> see the file api.py
+> Note: before seeing Norvig's code for the lit, and
+> seq functions I had not idea what some of these
+> functions would do, or how we would convert from a 
+> function call to a string, representing the function
+call.
+> in retrospect Norvig's  implementation seems very
+    simple and effective, but I couldn't see it before
+
+video 8 Search and Match
+-------------------------
+> matchset() isn't defined for an outside programmer to use
+> we expect a user to utilize search and match
+    along with the functions eol, plus, star... as
+    part of the api
+
+> we are to complete the search and match functions
+> see search_and_match.py for code and commentary
+
+video 9 Compiling
+-------------------------
+> Interpreter
+    > for regular expressions....
+    > patterns (a|b)+ define a language {a, b, ab, ba }
+    > we have interpreters [ ex: matchset()]
+        > it takes a pattern and performs computation on it
+    > for the same pattern, interpreter has inherent 
+        inefficiency. Pattern is operated on with each
+        call to matchset [ we're looking for same pattern
+        in many different strings]. A compiler is more
+        efficient.
+
+> Compiler
+    > does the work of computing on pattern all at once
+        from the beginning.
+    > two steps
+        > compilation step:
+            compile(pattern) ---> executable_c
+        > execution step:
+            executable_c(text)
+> Changing the Interpreter to a Compiler..
+    > ex: changing literal code
+        if 'lit' == op :
+            return set([text[len(x):]]) if text.startswith(x) else null
+
+        # becomes...
+
+        def lit(s): return lambda text: set([text[len(x):]]) if text.startswith(x) else null
+        # here our compiler returns a function that will produce from
+        the text the set of remainders that matchset would have
+        produced.
+
+video 10 Lower Level Compilers
+-------------------------
+> our compiler works by creating a composition of functions
+    from a pattern, and we call the pattern directly. Thus,
+    we don't keep analyzing the pattern every time it's used
+
+    ex: pat = lit('a') , pat2 = plus(pat) ---> "a+"
+> don't need matchset() to lookup what a function does
+
+> in a compiler there's two descriptions,
+    > a description of the patterns allowed
+    > a description of the compiled code
+        > here consists of python anonymous functions
+        > could be x86 machine instructions
+        > could be VM instructions {Java & Python}
+> use python's dis module to disassemble code, and
+    see the python bytecode
+    ex:
+    dis.dis( lambda x, y: sqrt(x**2 + y ** 2))
+
+video 11 Alt
+-------------------------
+> defining sequence
+
+    elif 'seq' == op:
+        return set(t2 for t1 in matchset(x, text) for t2
+        in matchset(y, t1))
+
+    # NOTE B/C OF COMPOSITION OF FUNCTIONS X AND Y WILL
+    # BE CALLABLE FUNCTIONS NOT STRING LITERALS, I FORGOT
+    # THIS IN MY FIRST VERSION
+    def seq(x, y): 
+        return lambda text : set().union( *map(y, x(test))
+
+        # we must call y on every element in the set
+        # returned by y. Each call to y, returns a set,
+        # we apply union to get back one set. But Union
+        # doesn't take a collection, but a list of
+        # arguments, so use "*", to unwind the arguments
+
+> now we have to do the definition for alt
+
+    elif 'alt' == op
+        return matchset(x, text) | matchset(y, text)
+
+    # my code
+    def alt(x, y): return lambda text: x(text).union(y(text))
+
+    # Norvig's code uses the "|" operator
+    def alt(x, y): return lambda text: x(text) | y(text)
+
+
+video 12 Simple Compilers
+-------------------------
+>  compilers are typically considered difficult, our
+    compiler is pretty simple., easier to understand
+    than the interpreter
+>  star(x) is the only complicated function to define
+    for our compiler b/c it's recursive:
+
+    def star(x): return lambda t: (set([t]) |
+                            set(t2 for t1 in x(t) if t1 != t
+                                 for t2 in star(x)(t1)))
+# ******** The code for star() is
+#           impressive. I don't think I could have
+#           produced something like this. Being unable
+#           to write my star() function so simply
+#           would have resulted in re-evaluating my
+#           implementation
+
+> How does the match function fit with
+    the different functions for compiling a pattern?
+
+    def match(pattern, text):
+        "match pattern against start of text; return longest match found or None"
+        remainders = pattern(text)
+        if remainders:
+            shortest = min(remainders, key=len)
+            return text[:len(text) - len(shortest)]
+
+video 13 Recognizers and Generators
+-------------------------
+> we just built a recognizer for our language
+> Recognizer takes a pattern, and a string, and 
+ indicates if the string is part of the language described
+    match(pat, text) ---> 'txt' | None   
+
+> Generator
+    > takes language specification and the language, L
+    L = { set of all valid strings by specification }
+
+    gen(pat) --> L
+> but a language can have an infinite number of strings
+    > Our implementation will take a set of lengths,
+     and will return all strings in the language 
+     of a length included in the input set
+
+     gen( {lengths_desired} ) ---> { strings }
+
+
+video 14 Oneof and Alt
+-------------------------
+> Norvig gives us the code to compile a generator
+    for a given language. The compiled generator
+    can then be queried for strings of different
+    lengths.
+
+    generator( [ list_of_str_lengths] ) ---> all
+            strings in language with length in
+            input set
+
+> We implement the alt() and oneof() functions
+    but I have difficulty understanding the 
+    concepts behind Norvig's code. It took
+    thinking about what the functions did
+    and what they were supposed to output
+    some minutes longer than usual.
+
+    > see oneof_and_alt.py for the code
+    and more commentary
+
+video 15 Avoiding Repetition
+-------------------------
+> looking at optimizations for our compilers
+> remember there's two parts to using a compiler
+    > the compilation stage, where our language
+        is first defined, and we create the
+        recognizer.
+    > then the second part where we use the
+        compiled generator over and over again
+        on different input
+
+> there are certain operations that we do every
+    time which only need to be done once @
+    compile time. We're being wasteful.
+    *** see one_of_and_alt_optimized.py for details
+
+video 16 Genseq
+-------------------------
+> the seq(x, y) function takes two arguments x, y
+    which are patterns applied in succession, the
+    calculation of strings in the language, however,
+    is deferred until the returned lambda function
+    is called with a set of numbers
+> by contrast, genseq(x, y, Ns): computes the 
+    strings produced by the pattern sequence x and y
+    immediately.
+
+> To figure out which combinations of a string produced
+    by x and a string produced by y, have a length in Ns
+
+    we know that the length of the strings returned by
+    genseq(x, y, Ns) is upper bounded by max(Ns). 
+
+    So we could perform the call x(M), where M = max(Ns)
+    and for each
+    returned string s in x(M) we could call y like so
+    y(M - len(s))
+    
+    but a simpler way would be to call both
+    x and y with M only once: x(M) and y(M), and look 
+    for all possible combinations with one member of
+    x(M) and another of y(M) such that their
+    length when concatenated is in Ns. Norvig 
+    prefers this option.
+
+
+    code:
+
+    def genseq(x, y, Ns):
+
+        Nss = range(max(Ns)+1)
+        return set([ a + b for a in x(Ns) 
+                        for b in y(Ns) 
+                            if len(a+b) in Ns])
+    
+> Norvig asks us to consider whether the above code
+    is completely correct.
+    After some thought,the only problem I see, is that
+    when used by either the star() or plus() functions
+    an infinite loop can occur b/c these functions
+    reference each other but the values of elements
+    in NS don't ever decrease
+
+>  Norvig states that the problem is something else:
+    given plus(opt('a')),
+
+    we should output { "", a, aa, aaa, ...}
+    but plus would call opt for each subsequent character.
+    What if we pick the empty string each time?
+    the we're not getting anywhere and our program can
+    end up going on infinitely
+
+    > we need to change something to make sure we're making
+    progress every time through
+
+video 17 Induction
+-------------------------
+> what we must do: check all points where we have
+    recursion and make sure it terminates. This occurs
+    inside star() and plus()
+
+> star() is defined in terms of plus(), so if we fix plus()
+    we'll be fine. I didn't think this was true. Rather, it
+    seems to me that the two functions just reference
+    each other, but all the same I guess fixing one would 
+    fix both.
+
+> plus is defined as
+    plus(x) = x+star(x)
+    ** and star(x) is defined partially with plus
+    star(x) = opt(plus(x)) # remember opt(y) = epsilon | y
+
+> need to have some sort of induction where we're 
+    reducing something to make sure things terminate.
+    Here we should reduce the set Ns.
+
+    At each step we make sure that we produce @ least one
+    character before going on, => reduce Ns
+
+video 18 Testing Genseq
+-------------------------
+> new definition of genseq is...
+
+def genseq(x, y, Ns, startx=0):
+    "set of matches to xy whose total len is in Ns, with
+    x-match's len in Ns..."
+    # Tricky part x+ is defined as x+ = x x*
+    # to stop th recursion, first x must generate at least
+    # 1 char, and then the recursive x* has that many fewer
+    # characters. We use startx=1 to say that x must match
+    # at least 1 character
+
+    if not Ns:
+        return null
+    xmatches = x(set(range(startx, max(Ns)+1)))
+    Ns_x = set(len(m) for m in xmatches)
+    Ns_y = set(n-m for n in Ns for m in Ns_x if n-m >= 0)
+    ymatches = y(Ns_y)
+    return set(m1+m2
+                for m1 in xmatches for m2 in ymatches
+                if len(m1+m2) in Ns)
+
+    # Ns_y is the calculated possible lengths that the
+    # y() function must return to be able to match
+    # something returned by x().
+    # startx argument makes this work, by default
+    # our code can match 0, but when called from
+    # plus() we ensure that the code makes
+    # progress by calling genseq() with startx=1
+    # ie @ least one char must be chosen before
+    # we recurse
+> @ end of video Norvig shows us a minimal test function
+    for genseq
+
+video 19 Theory and Practice
+-------------------------
+> what we've learned so far:
+> Theory
+    > patterns
+    > grammars
+    > interpreters
+    > compilers
+> practice
+    > reg exp are useful for many things
+    > interpreters/compilers are a useful tool
+        often easier to describe a problem in terms of
+        its native terms, instead of a programming language
+    > functions
+        more composable than other language features,
+        they can be composed dynamically. ex: f(g(x))
+        can happen in program without having to hard-code
+        it. Things like expressions and statements 
+        can be composed to a large extent, but this is
+        all set in stone by compile time
+
+        ** Ask about this...
+
+        functions also allow us control over time,
+        package up computations for later, or do them
+        now.
+
+video 20 Changing seq
+-------------------------
+> seq() and alt() are binary
+> what if we want a sequence of four items?
+    seq(a, seq(b, seq(c, d))) ----> ugly, inelegant
+> we should refactor seq() to take any number of
+    arguments
+> if we make a change to seq() we have to consider
+    effects on every place that seq() is used. every
+    time it's called, or calls something
+
+    Factors to consider:
+    1) is the change backward compatible, so change is only
+        local? If so changes are reduced, this is a good
+        property to have.
+    2) is the change internal or external, changing something
+        on the inside( generally backwards compatible),
+        or changing interface to the outside world?
+
+    ** Here we change the seq() function signature,
+    but we do so, in a way that is backward compatible so
+    we're ok.
+
+> considering our matchset() solution that matches a
+    pattern to text, should we modify seq() directly to take
+    multiple arguments, or should we modify
+    seq(*args) to use a two argument seq() ?
+
+    i.e. should seq(a, b, c, d) map to ('seq', a, b, c, d)
+    or to ('seq', a('seq', b('seq', c, d))) ??
+
+    I would change seq to return ('seq', a, b, c, d) b/c
+    it's cleaner. The code size wouldn't change much,
+    the only drastic change would be to the matchset()
+    function for when a 'seq' operation is encountered.
+    Here we would simply generalize the already existing
+    code for an arbitrary number of elements
+
+    Norvig thinks nested tuples i.e.:
+        seq(a, b, c, d) --> ('seq', a, ('seq', b, ('seq', c, d)))
+    is easier b/c the outside world sees exactly
+    the same thing, but internally we can write the calls
+    in a convenient form, and we don't have to change
+    the rest of the program to make things happen.
+
+    I got confused, and wanted to make the output of seq()
+    more readable, but users won't be dealing with this 
+    output directly, so it doesn't matter so long as it
+    can be computed upon. Either option, makes the api look
+    cleaner to a user, but Norvig's option does so without 
+    changing as much code.
+
+video 21 Changing Functions
+-------------------------
+> implementing the change in the last video to
+    the seq() function
+
+> old definition:
+    def seq(x, y) :
+        return ('seq', x, y)
+
+    # my new definition
+    
+    def seq(*items):
+        return null if items == None or len(items) == 1
+
+        return ('seq', items[0], seq(items[1:])) 
+            if len(items) > 2 
+            else ('seq', items[0], items[1])
+
+    # Norvig's first version
+    # uses x to ensure that there is @ least one
+    # argument to the function
+    def seq(x, *args):
+        if len(args) == 1
+            return ('seq', x, args[0])
+        else
+            ...
+
+    # BUT...Norvig says we're repeating ourselves too much
+    # we'll have to make the same changes to alt(), and
+    # to any binary functions which we may introduce later
+    # like say an add() or mult() function
+    #
+    # We're in violation of the DRY Principle
+    # He also disliked the fact that we "did such violence"
+    # to the original definition of seq()
+
+> We should backup and ask ourselves what we're actually
+    doing in general.
+
+    We're taking a binary function f, and changing it to
+    take an arbitrary number of arguments (n-ary)
+
+    f(x,y) ----> f'(x, ...)
+
+    can we figure out a way to do this in general?
+
+video 22 Function Mapping
+-------------------------
+> Norvig asks us to consider 3 options to make this
+    work:
+
+    1. edit bytecode of f
+    2. edit source str of f
+    3. define f as f = g(f)
+
+    I'm not even sure what is meant by the first 2
+    options, so I went with the third. My idea
+    was to simply write a new function g(), this
+    would require having overloaded function names
+    so that seq(x, *args) and seq(x, y) would both
+    be valid, so this wouldn't work
+
+    > Norvig goes with the 3rd solution b/c we
+    know how to compose functions, and it's easy.
+    It's been a running theme in all this unit
+
+video 23 N Ary Function
+-------------------------
+
+# here's my solution
+def nary(func_name, x, *args)
+    if args == None or len(args) == 0 :
+        return None
+    if len(args) == 1:
+        return (func_name, x, args[0])
+    else:
+        return (func_name, x, 
+            nary(func_name, args[0], args[1:]))
+
+# Norvig's version
+f2 = n_ary(f)   # n_ary takes a binary function
+and returns a function that takes any number
+of arguments
+
+> Norvig gives us the outline of n_ary
+    and we have to fill in the code
+    see n_ary.py for my solution
+
+video 24 Update Wrapper
+-------------------------
+> how do we use the function from video 23?
+
+do:
+
+    def n_ary(f):
+        # see definition in n_ary.py
+
+    def seq(x, y): return ('seq', x, y)
+
+    seq = n_ary(seq)
+
+    # absolutely brilliant!!! I never would have thought
+    # that a function could be reassigned a value like
+    # that.
+
+> this pattern happens often in python, it's called the
+    decorator notation:
+
+    @n_ary
+    def seq(x, y): return ('seq', x, y)
+
+    # the above does the same thing, INVESTIGATE FURTHER
+
+> a problem?
+    > in an interactive console help(seq) doesn't display
+    the right help info
+    to fix do:
+
+    from functools import update_wrapper
+
+    def n_ary(f):
+    ...
+        def n_ary_f(x, *args)
+        ...
+        ...
+        update_wrapper(n_ary_f, f)
+        return n_ary_f
+
+
+    > but we're repeating ourselves again, we want
+    to do this wrapper_update every time automatically
+    not manually. < to be continued...>
+
+video 25 Decorated Wrappers
+-------------------------
+> instead we can define a new decorator
+    called "@decorator"
+
+    @decorator
+    def n_ary(f):
+    ...
+        def n_ary_f(x, *args)
+        ...
+        ...
+        update_wrapper(n_ary_f, f)
+        return n_ary_f
+> the first two lines above
+    mean that n_ary = decorator(n_ary)
+
+> the lines 
+    @n_ary
+    def seq:
+
+    mean that seq = n_ary(seq)
+
+> def decorator(d):
+    def _d(fn):
+        return update_wrapper(d(fn), fn)
+    update_wrapper(_d, d)
+    return _d
+
+> The above works b/c update_wrapper returns the wrapper 
+    argument when done. otherwise this would  require
+    two lines instead of one.
+
+
+video 26 Decorated Decorators
+-------------------------
+
+> Here Norvig asks us if the following would work:
+
+def decorator(d):
+    "Make function d a decorator: d wraps a function fn.
+    @author Darius Bacon"
+
+    return lambda fn: update_wrapper(d(fn), fn)
+
+decorator = decorator(decorator)
+
+> YES the above works, but how??
+
+> explanation: we redefine decorator(d) so that
+it's equivalent to lambda fn: update_wrapper(d(fn), fn)
+> when the decorator function is called, though
+    d is bound to the original definition of decorator
+    b/c of the scoping involved when decorator() was
+    assigned to a lambda
+
+    thus in the expression:
+        lambda fn: update_wrapper(d(fn), fn)
+
+        d is equivalent to 
+        def d(dec)
+            return lambda fn: update_wrapper(dec(fn), fn)
+
+
+
+
+video 27 Cache Management
+-------------------------
+> def fib(n):
+    if n is cache:
+        return cache[n]
+    cache[n] = result = ....
+    return result
+
+> we don't want to repeat the code of using a
+    cache every time, just do it once, and
+    apply it to various problems. Avoid violating
+    DRY
+
+@decorator
+def memo(f):
+    """Decorator that caches the return value for each call
+    to f(args). Then when called again with same args, we
+    can just look it up."""
+    cache = {}
+
+    def _f(*args):
+        try:
+            return cache[args]
+        except KeyError:
+            cache[args] = result = f(*args)
+            return result
+        except TypeError
+            # some element of args can't be a dict key
+            return f(args)
+    return _f
+
+    # decided to use try/except structure instead of if/then
+    # b/c we would need it anyway for case where the args
+    # aren't hashable
+
+> UnHashable Objects?
+> is [1, 2, 3] in d # where d = {}
+    ----> TypeError: unhashable type:list
+
+> b/c lists are mutable they are unhashable
+> we could compute a hash on a list & place it in a 
+    dictionary, but what happens when we change a
+    value in the list. It's placement in dictionary
+    is incorrect
+
+video 28 Save Time Now
+-------------------------
+> showing the time savings a function achieves
+    using memo ( from video 27)
+> instead of using timing, will show the number of 
+    function calls made, to show effects of memoization
+
+> decorator function used is...
+
+@decorator
+def countcalls(f):
+    "Decorator that makes the function count calls to it,
+    in callcounts[f]."
+
+    def _f(*args):
+        callcounts[_f] += 1
+        return f(*args)
+    callcounts[_f] = 0
+    return _f
+
+callcounts = {}
+
+> without the memoization, a naive fibonacci function makes
+about 2.6 million function calls to resolve
+fib(30), a memoized version only makes 59 calls !!!
+
+> in naive approach the number of calls required to 
+calculate fib(n) divided by calls to calculate fib(n-1)
+approaches the golden ratio!!
+
+video 29 Trace Tool
+-------------------------
+> types of tools we have available
+    > Debugging tools
+        > countcalls
+        > trace -- helps see the execution of program
+        > disabled:
+            def disabled(f): return f
+            > see next video
+    > Performance tools
+        > memo
+    > Expressiveness tools
+        def:more power to say more about your language
+        > n_ary
+> a trace decorator
+    > gives an idea of program flow control
+        > see trace_tool.py
+    > why does Norvig use a try/except structure?
+
+video 30 Disable Decorator
+-------------------------
+> We can count a "disabled" function as part of our
+    debugging tools
+
+     def disabled(f): return f
+
+> an identity function
+> when we have used decorators for debugging all over
+our code, rather than eliminating the decorator wherever
+it occurs, we can just do
+
+    decorator_fn = disabled
+> so that the decorator doesn't do anything to the passed
+    function. Reload program afterwards
+> we don't say that disabled is a decorator, b/c
+    it returns the same function passed to it
+
+video 31 Back To Languages
+-------------------------
+> Our naive definition of fibonacci uses wishful thinking,
+    it assumes fib() is already defined, and calls it
+    for smaller values of n. Likewise...
+> sometimes its useful to assume you have the language
+    you want and proceed as if you did
+> possible to write a reg expr to recognize algebraic 
+    expressions???
+    > I say no b/c the problem of matching parentheses 
+    cannot be solved with a regular language, i.e. not
+    recognized by a finite automata
+    > Norvig agrees and says we need something more 
+    powerful ( a context free language)
+
+video 32 Writing Grammar
+-------------------------
+> write a grammar that defines the language of
+    algebraic expressions. 
+    > remember a language is the set of all strings
+    valid under the grammar
+> 
+    Exp     --> TERM [-+] EXP | TERM
+    TERM    --> [*/]            # Norvig left incomplete
+
+> Norvig says he used wishful thinking above, saying
+    I wish I had a notation like above to describe
+    what the grammar is
+
+video 33 Descriptionary
+-------------------------
+> Norvig's grammar
+
+G = grammar(r"""
+Exp     => Term [+-] Exp | Term
+Term    => Factor [*/] Term | Factor
+Factor  => Funcall | Var | Num | [(] Exp [)]
+Funcall => Var[(] Exps [)]
+Exps    => Exp [,] Exps | Exp
+Var     => [a-zA-Z_]\w*
+Num     => [-+]?[0-9]+([.][0-9]*)?
+""")
+
+> we applied wishful thinking above, assuming we
+    had the right grammar at our disposal
+
+> G could be a dictionary!
+
+    G = {'Exp':(['Term', '[+-]', 'Exp'], ['Term']),
+        'Term': (['Factor', '[*/]', 'Term'], ['Factor']),
+    }
+
+    chose right hand side to be a set of alternatives, but
+    order matters so chose a sequence not a set and made
+    it a tuple of alternatives, each element in tuple is a 
+    sequence of items in the alternative ( as a list)
+    each element of a list is an atom
+
+> could have written our grammar in the format above
+    but it's messy and error prone. Easier to write
+    in a natural format then write grammar() function
+    to parse out a dictionary
+
+    # my grammar function
+    def grammar(description):
+        G = {}
+        for line in split(description, "\n"):
+            for rule in split(line, "=>"):
+                options = [split(x, " ") for x in
+                            split(rule[1], "|")]
+                G[rule[0]] = tuple(options)
+        return G
+
+        # Norvigs grammar function
+    def grammar(description):
+        """Convert a description to a grammar"""
+        G = {}
+        for line in split(description, "\n"):
+            lhs, rhs = split(line, ' => ', 1)
+            alternatives = split(rhs, ' | ')
+            G[lhs] = tuple(map(split, alternatives))
+        return G
+> Norvig uses a split utility that automatically
+    removes all whitespace from each piece
+
+    def split(text, sep=None, maxsplit=-1):
+    " Like str.split applied to text, but strips whitespace from each piece"
+    return [t.strip() for t in text.strip().split(sep, maxsplit) if t ]
+
+video 34 White Space
+-------------------------
+> our grammar detects correctly: "m*x+b"  but not"m * x + b"
+    b/c whitespace between tokens isn't allowed by
+    our specification. 
+> Let's change that...
+
+> new version of the function
+
+    def grammar(description, whitespace=r'\s*'):
+        """Convert a description to a grammar. Each line
+        is a rule for a non-terminating symbol; it 
+        looks like this:
+            Symbol => A1 A2 ... | B1 B2... | C1 C2 ...
+        each alternatives is a sequence of atoms. Atom
+        is either the lhs of some other rule, or a
+        reg expression to be passed to re.match to match
+        a token.Notation for *, +, or ? is not allowed 
+        in a rule alternative ( but ok within a token.)
+        Use '\' to continue long lines. Space around 
+        "|" and "=>" is required. By default, all
+        whitespace is allowed between tokens, specify 
+        your own allowable whitespace via the 2nd
+        argument"""
+        
+        G = {' ':whitespace}
+        description = description.replace('\t', ' ') # no, tabs!
+        for line in split(description, "\n"):
+            lhs, rhs = split(line, ' => ', 1)
+            alternatives = split(rhs, ' | ')
+            G[lhs] = tuple(map(split, alternatives))
+        return G
+> New version doesn't allow for tabs b/c we expect "|" 
+    and "=>" to be surrounded by space, this could
+    lead to errors that are hard to debug if not handled
+
+video 35 Parsing
+-------------------------
+> how will it look like:
+    parse(symbol, text, G) --> remainder
+    symbol -- an atom w/ a rule for it ex: Expr, Term etc.
+    text = string to parse
+> there's a single result for each parse, not set
+    b/c author of grammar should make it unambiguous
+
+> for each symbol consider the alternatives in L to R
+    order, if we find one that works, we won't 
+    consider the others.
+
+    This is important b/c if we have
+    Exp => Term | Term [+-] Exp 
+    and the string "a+3", this won't parse correctly
+    b/c the first alternative will be applied. Need
+    to write alternatives with common prefixes so
+    that the longer ones come before shorter ones
+
+> parser is different from a recognizer b/c it says 
+    yes/no if a string is part of a language and gives
+    a parse structure
+
+> we'll actually return a two part tuple: (tree, remainder)
+
+> Fail = (None, None)
+
+> cases where we have to parse text and how we'll handle 
+    them:
+    > 'Exp' in the grammar
+        > handle w/parse_atom
+    > parse regular expression [+-]
+        > use re.match with variable tokenizer
+    > parse alternatives: ([...], [...])
+        >  this is part of parse_atoms
+    > parse a list of atoms [.., .., ..]
+        parse_sequence
+
+video 36 Parse Function
+-------------------------
+> Norvig shows us the parts of his parse function
+
+video 37 Speedy Parsing
+-------------------------
+> Exp => Term [+-] Exp | Term
+    > what if we have a really long Term in an expression
+    and matching the first rule fails. When we match to 
+    the second rule, we have to parse through the really
+    long Term a second time.
+
+> we should change the parser so that we only parse
+    for common prefixes once
+
+> Solution: use the memoization decorator we came up with
+    that way we reuse common prefixes
+
+    > Peter Norvig gave us a big hint for how to do this
+        I wouldn't have thought it myself. A brilliant bit
+        of code reuse, and memoization!
+
+    parse atom and parse sequence are internal functions
+    to the parse function b/c they need to know about
+    the grammar G, but we couldn't apply memoization to
+    the entire parse() function because the input grammar
+    G is not hashable ( since it's a dictionary and they're
+    mutable). Thus it was better to separate out the 
+    pieces of parse() into helper functions
+
+video 38 Catching Typos
+-------------------------
+> Norvig uses a function, he called verify(G) which displays
+    all of the lhstokens, rhstokens, terminals and
+    other elements a grammar was parsed into. 
+    He says it's useful to see if one made a
+    typo in writing a grammar
+
+
+video 39 Summary
+-------------------------
+> This unit was about tools,
+    > build useful tools, recognize what they are
+    > apply them to a component of a domain
+> Useful tools
+    > language
+            > define your own, if programming language
+            doesn't suit the problem at hand
+        > grammars, interpreters, compilers
+    > functions
+        > powerful in a way that statements aren't
+        > composable, one function, it's an object.
+            change once and see changes everywhere.
+            by contrast statements must be copied/pasted
+            to be used more than once
+        > decorators as functions
+        > functions as objects
+
+Office Hours
+-------------------------
+> look @ module pickle, takes an object
+    and writes it back to disk, in a form that can
+    be read back in
+> design process & making mistakes
+    > Norvig makes lots of mistakes anywhere in the process
+        > general coding mistakes
+            > not enough test cases etc.
+> how to decide which paradigm to use when approaching
+    a problem?
+
+    > Norvig: I want to program at the level of the problem.
+        How can I get as close to the problem as possible.
+        Incidentally have to code with a language
+
+        > what are the pieces of the problem? 
+            how am I going to manipulate these pieces?
+            Analyse mostly at the level of the problem
+            Once this analysis is done, check to see
+            what you have available to you.
+
+        > Norvig likes this approach b/c there's a more
+        direct link between the problem and the solution
+        instead of a multi-step of going between the 
+        problem to the code implementation to the solution.
+
+

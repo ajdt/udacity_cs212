@@ -1,0 +1,575 @@
+~~~~~~~~~~~~~~~~~~~~
+video 1 welcome back
+~~~~~~~~~~~~~~~~~~~~
+> the class is all about managing complexity
+    > many programs deal with complexity by ruling out
+    uncertainty
+    > easy, but constrains what you can do
+> we'll learn about how the laws of probability can
+    help your programs deal with uncertainty
+    > can allow uncertainty in actions or what you know
+    about your world, but still use laws of probability
+    to figure out what the right thing to do is.
+
+~~~~~~~~~~~~~~~~~~~~
+video 2 Porcine Probability
+~~~~~~~~~~~~~~~~~~~~
+> understanding probability lets you attack a broader
+    range of problems 
+> often probability comes into play when doing
+    search problems:
+    > How?
+        > two possible ways
+            > we can start at any one of a set
+            of start states
+            > we don't know ahead of time what
+                the effect of an action will be.
+                We could end up in a different
+                result state than intended
+> Our exploration uses the dice game: PIG
+    > rules:
+        > 2 players take turns, have current scores
+            and a score goal
+            > during turn can roll or hold,
+                if hold then pending score is added to 
+                player score
+                if roll, then  if result isn't 1 we 
+                add value to the pending score.
+                if roll is a 1, then we get a 'pig out'
+                1 gets added to player score, and
+                it's the other player's score
+
+~~~~~~~~~~~~~~~~~~~~
+video 3 The State of Pig
+~~~~~~~~~~~~~~~~~~~~
+> concept inventory
+> this time break inventory down into categories
+
+    > high level
+    > mid level
+        State
+        Actions -- roll/hold
+    > low level
+    
+    > in the forums they had a discussion about what level
+    to start at
+
+> what's necessary to describe state ?
+    score 0 / score 1
+    pending
+    player turn
+    previous roll
+    previous turn score
+
+    * previous roll and previous turn score don't matter
+    state can be 
+    state --> (p, me, you, pending)
+        p = player to move
+        me = current player score
+        you = other player score
+        pending = current pending score
+
+~~~~~~~~~~~~~~~~~~~~
+video 4 Concept Inventory
+~~~~~~~~~~~~~~~~~~~~
+> low level
+    die
+    scores
+    players & player to move
+> high level
+    play-pig
+    strategy for playing
+
+> when thinking about the problem, Norvig started middle
+    out. Now he claims to have a good feel for the problem,
+    and states that a top down approach seems best.
+
+    > if there was something in the lower levels that might
+    be difficult, we would try to resolve the difficulty
+    since it would affect the higher levels.
+    > since this is not the case, Norvig feels confident
+    in approaching the problem, and not expecting to be
+    constrained as he works down the levels from high to low
+
+    concept             representation
+----------------------------------------
+> high
+    play-pig              func(A,B) --> A
+    strategy            func(state) --> action
+
+> mid
+    state-                  (p, me, you, pending)
+    actions -               'roll'/'hold'
+        roll(state) --> { state }
+        hold(state) --> state
+        # we have an uncertain domain b/c an action
+        doesn't have one concrete state, but instead
+        has a set of states
+
+        # other option
+        roll(state, d) --> state
+        # norvig thinks this is simpler to deal with
+> low
+    die -                       int
+    scores -                    int
+    players         strategy1()/ strategy2()
+    to move                 1/0
+~~~~~~~~~~~~~~~~~~~~
+video 5 Hold and Roll
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to write the functions hold() and roll()
+    > see hold_and_roll.py
+> Norvig says he begins to worry about a state 
+    that is a tuple with so many elements,
+    it starts to become hard to remember what each
+    element stands for. 
+    > be especially worried if the number of elements
+    goes up drastically from 4
+
+    > there are other possibilities where we can be
+    more explicit about what a state is, instead
+    of just being undifferentiated tuple elements.
+
+~~~~~~~~~~~~~~~~~~~~
+video 6 Named Tuples
+~~~~~~~~~~~~~~~~~~~~
+> to make our state more explicit, we can use
+    a namedtuple.
+    > gives name to a tuple and it's individual elements
+
+    ex:
+
+    from collections import namedtuple
+    State = namedtuple( 'state', 'p me you pending')
+    s = State(1, 2, 3, 4)
+    
+    s.p --> 1
+    s.me --> 2
+
+> why do this?
+    > Pros
+        > more explicit about what a state is
+        > helps catch errors. If ask for p field of something
+        that isn't a State, get an error, but we can
+        access the 1st element of any regular tuple, even 
+        if it's not a proper state
+    > Cons
+        > more verbose
+        > may be unfamiliar to some programmers
+
+> could do something similar by defining a class
+    > it has same benefits and isn't unfamiliar
+    > but unfortunately it's even more verbose
+
+> hold and roll look similar after this change, except
+    slightly wordier since we have to explicitly access
+    each field using "State.field" notation
+~~~~~~~~~~~~~~~~~~~~
+video 7 Clueless
+~~~~~~~~~~~~~~~~~~~~
+> strategies
+    func(state) --> roll or hold
+
+> asks us to write a function clueless, that ignores the
+    state and chooses at random from possible moves
+
+    > see clueless.py for my code
+
+~~~~~~~~~~~~~~~~~~~~
+video 8 Hold At Strategy
+~~~~~~~~~~~~~~~~~~~~
+> Norvig describes a family of strategies, called
+    hold_at n
+    > we keep rolling until we reach or exceed
+    a value n, unless the pending score 
+    and current score already guarantee a win.
+> since hold_at n is a family of functions we are to write 
+    a function that returns a "hold_at" function for a 
+    specific n value
+> see hold_at.py for my code
+
+~~~~~~~~~~~~~~~~~~~~
+video 9 Play Pig
+~~~~~~~~~~~~~~~~~~~~
+
+> talking about function play_pig(A,B):
+> what does the function do?
+    > keep score, pending score
+    > takes turns
+        ** the above is basically managing the state
+    > call strategy functions --> action
+    > do action --> {state}
+    > roll die --> state
+
+> wants us to write play pig function, and write 
+    tests. see play_pig.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 10 Dependency Injection
+~~~~~~~~~~~~~~~~~~~~
+> how can we test a function like play_pig()?
+> how do we test when there's a non-deterministic element
+    to the function?
+    > use dependency injection
+    > inject some deterministic numbers
+> dependency injection
+    > we affect something that a function calls or relies on
+~~~~~~~~~~~~~~~~~~~~
+video 11 Loading the Dice
+~~~~~~~~~~~~~~~~~~~~
+> Norvig gives some code to do dependency injection
+> we are to write a series of rolls that let A win
+> see loading_dice.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 12 Optimizing Strategy
+~~~~~~~~~~~~~~~~~~~~
+> instead of incrementally trying to come
+    up with a better and better strategy
+    can we just jump to the best (optimal)
+    strategy?
+> In search, we define what the "world" looks
+    like, and use a search algorithm to find
+    the best possible solution using our
+    world representation.
+
+    > can we do the same thing for this??
+> With this example we have additional complications to
+    the search problems.
+    > we have a die that will on average be fair, and
+    an opponent who is seeking the best outcome for 
+    themselves, and worst outcome for us.
+
+> our way of describing the world.
+    > first we choose an option, "roll" or "hold", if we
+    roll then there are six branching possibilities, in
+    one of which it's now our opponent's turn. If we follow
+    all paths, where we're trying to maximize our
+    points, and our opponent is trying to minimize his
+    points, and average these path's values. => we can
+    find an optimal path
+
+~~~~~~~~~~~~~~~~~~~~
+video 13 Utility
+~~~~~~~~~~~~~~~~~~~~
+> in economics and game theory, the value of a state is
+    it's utility
+> a winning state has utility 1, losing has utility 0
+    >  the utility of a node representing your choice
+    is equal to the maximum utility of any path
+    > the utility of a node representing an opponent's 
+    choice will be the minimum path ( your opponent doesn't
+    want you to win)
+
+> quality(state, action) -->  number
+    > what's the utility of this action given this state
+
+> for the dice outcome, the utility is the average of
+    all possibilities since the die isn't an intelligent
+    agent.
+
+> from the end state(win/loss), we can work backwards and find 
+    the utility of each state and the quality of
+    each state to figure out an optimal strategy. 
+
+
+~~~~~~~~~~~~~~~~~~~~
+video 14 Game Theory
+~~~~~~~~~~~~~~~~~~~~
+> game theory is decision under uncertainty when 
+    you face an opponent
+> Norvig does an example of game theory, this 
+video and the previous are worth another look
+> i just wasn't in the mood to pay too much attention at
+the time
+~~~~~~~~~~~~~~~~~~~~
+video 15 Break Even Point
+~~~~~~~~~~~~~~~~~~~~
+> find the point at which gambling 1 million to get
+    three million has the same expected value for 
+    deciding to gamble or deciding to hold
+> by setting the expected value of Q(state, 'gamble', math.log10)
+    equal to the expected value of
+    Q(state, 'hold', math.log10)
+    We get the correct value
+
+~~~~~~~~~~~~~~~~~~~~
+video 16 What's your crossover?
+~~~~~~~~~~~~~~~~~~~~
+> Nothing to note
+
+~~~~~~~~~~~~~~~~~~~~
+video 17 Optimal Pig
+~~~~~~~~~~~~~~~~~~~~
+> Norvig demonstrates the Q_pig() and pig_actions()
+    functions as we form an optimal strategy to the
+    pig function
+> Q_Pig gives the utility of a particular action
+    Q_Pig(state, action, utility_fnc)
+
+> PWin -- the probability of winning is the same
+    as utility in this case b/c we can do a direct 1:1
+    mapping between the probability of a move helping 
+    us win, and it's usefulness
+
+~~~~~~~~~~~~~~~~~~~~
+video 18 Pwin
+~~~~~~~~~~~~~~~~~~~~
+
+> what's the probability of winning from a state?
+    > Norvig shows us some code
+
+    Pwin(state)
+
+    > if the state has me +pending > goal ---> return 1
+    > if you > goal ---> return 1
+    otherwise for all actions in pig_actions(state)
+    return the probability of the action with the best
+    utility.
+        > this is like assuming that we will consciously
+        make the best choice, when we can
+
+~~~~~~~~~~~~~~~~~~~~
+video 19 Maxwins
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to write the max_wins(state) function 
+    that uses the optimal pig strategy
+
+> this was fairly trivial, since Norvig wrote all of the 
+    important code, it just involved writing a
+    single line to return a function call
+
+    > see max_wins.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 20 Impressing Pig Scouts
+~~~~~~~~~~~~~~~~~~~~
+> Norvig has created a play_tournament function for
+    several games to be played against various strategies
+> in all cases max_wins beats out the other strategies,
+    though hold_at_20 comes close
+> what were to happen if we change the utility function
+    like we did for the 1 million vs 3 million dollar
+    example, though?
+
+    > Pwin seems rational, if you want to win you want
+    to maximize your chances of winning
+
+    > what if you're trying to impress a pig scout who is
+    watching a game?
+        > you want to maximize your differential.
+            win by as big of a margin as possible to 
+            attract attention.
+
+            your motivations have changed, the utility 
+            function has thus changed too
+
+~~~~~~~~~~~~~~~~~~~~
+video 21 Maximizing Differential
+~~~~~~~~~~~~~~~~~~~~
+> note we're careful to memoize the functions we're using
+> Norvig asks us to define the strategy function for
+    maximizing differential. He's written the utility 
+    function already
+
+    > see maximizing_differential.py
+
+~~~~~~~~~~~~~~~~~~~~
+video 22 Being Careful
+~~~~~~~~~~~~~~~~~~~~
+> in maximizing_differential.py Norvig used the utility
+    function where he meant to use the strategy function.
+
+    claims the problem occurred b/c his names for each
+    function were too similar. Because his if/elif chain
+    only explicitly checks for a "hold" return value from
+    the strategy function, and treats all other values
+    as equal to "roll", 
+    the utility function was erroneously used as a strategy
+    function that always rolls [ utility functions return
+    numbers and numbers are never equal to "hold"]
+> in other languages this wouldn't occur b/c of 
+    function return types, and compile time type checking,
+    but python doesn't provide this safety net
+
+~~~~~~~~~~~~~~~~~~~~
+video 23 Legal Actions
+~~~~~~~~~~~~~~~~~~~~
+> Norvig asks us to update the strategy function to
+    explicitly ensure a strategy function performs a
+    legal action
+> otherwise strategy function automatically loses
+    > I feel like the best thing to do would be to
+    throw some sort of exception, or at least some
+    output to user
+
+    > see legal_actions.py for code
+> this one was pretty simple
+
+~~~~~~~~~~~~~~~~~~~~
+video 24 Using Tools
+~~~~~~~~~~~~~~~~~~~~
+> Norvig shows us how to compare maximize differential and
+    Pwin strategies using some code.
+
+> first defined all possible states for a goal of 40
+    then counted the number of times both programs
+    rolled, held or chose distinct actions in a
+    dict
+
+    states = [(0, me, you, pending) 
+                for me in range(41) for you in range(41) 
+                for pending in range(41)
+                if me + pending <= goal ]
+
+    len(states)     # is 35301
+
+    from collections import defaultdict
+
+    # default value is 0 
+    r = defaultdict(int)
+    for s in states: r[max_wins(s), max_diffs(2) ] += 1
+
+    # how is the above a tuple??
+
+> according to Norvig's data, maxwin is more aggressive
+
+> in this analysis our design choices paid off
+    > we built from the ground up, so at the bottom
+    we have a lot of useful tools, to help analyse the
+    situation. We can put them together in different
+    ways to analyse our strategies or do something else.
+
+    Often it's good to build components along the way,
+    so we can code our main goal, but also use the pieces
+    for something else if necessary
+
+~~~~~~~~~~~~~~~~~~~~
+video 25 Telling A Story
+~~~~~~~~~~~~~~~~~~~~
+> Norvig shows us some code demonstrating that
+    as the pending score gets higher maxwin is more
+    likely to keep rolling, while maxdiff will hold.
+    For smaller rolls, maxwin is more likely to hold,
+    and maxdiff rolls more aggressively
+> Norvig describes the power of breaking things up between
+    what is happening ( the in-game rules, situation etc) 
+    and maximizing. 
+    > In this way, we can write a program that maximizes
+    without having to encode the rules of the game into
+    the decision process ( i.e. when your in such and
+    such state do this).
+> exploration is a big part too
+    > didn't just build a big program to do one thing
+    > we built a set of tools instead
+    > when we needed to do something else with these tools
+        it was easy
+
+~~~~~~~~~~~~~~~~~~~~
+video 26 Simulation Vs. Enumeration
+~~~~~~~~~~~~~~~~~~~~
+> two ways of dealing with probability
+    > randomly sample until we have a large enough data
+    set and hope that it's representative of the whole
+        > simluation
+        > norvig claims we've been doing this, I don't know
+        how
+> enumerate all possibilities and do an analysis for
+    the probabilities you're interested in.
+
+~~~~~~~~~~~~~~~~~~~~
+video 27 Conditional Probability
+~~~~~~~~~~~~~~~~~~~~
+> concept inventory
+    random variable
+        1st child, 2nd child
+    sample space
+        universe of events
+    events
+        sample points
+> representation
+    random variable
+        1st child, 2nd child
+    sample space
+        universe of events
+    events
+        collection of str or a predicate
+            > if predicate then returns true
+                on some strings and false on others
+    sample points
+        a string
+~~~~~~~~~~~~~~~~~~~~
+video 28 Tuesday
+~~~~~~~~~~~~~~~~~~~~
+    > look @ this video again, try to code his
+    conditional probability example
+
+~~~~~~~~~~~~~~~~~~~~
+video 29 Summary
+~~~~~~~~~~~~~~~~~~~~
+> probability helps us deal with uncertainty
+> we can search with uncertainty
+    > utility lets us do this by providing the best-action
+    >  utility separates the how from the what
+        > don't have to tell computer how to find best
+        answer
+        > just state what the situation is, and it finds
+        the best answer (using utility as a guideline )
+> simulation
+    > making repeated random choices, and counting up
+        results
+> enumeration
+    > for when we have few possibilities
+
+> inject functionality into a function by
+    sneaking it in on top of one of the arguments
+    > part of aspect oriented programming
+        Keep printing/debugging separate from
+        main logic
+> exploratory data analysis is possible if we
+    have a good design.
+> errors with types of functions
+
+
+~~~~~~~~~~~~~~~~~~~~
+Office Hours
+~~~~~~~~~~~~~~~~~~~~
+> strategies to catch errors
+    > integration testing and unit testing
+        > unit testing: start with pieces for which you know
+        the right answer, and check if you are correct
+        > then check one move further back
+        > make the unit test incrementally more complex
+> most important python tools, IDE etc.
+    > Norvig uses emacs
+    > numpie and scipie modules are important according to
+    Norvig
+    > debugging -- print statements and tests, using the
+    interactive interpreter and calling functions to
+    see output. Rarely uses an actual debugger
+
+    >  profiling not used by Norvig often, if it's too slow
+    to begin with, then maybe you're using the wrong language
+    to begin with.
+> good step from cs 102 in terms of udacity courses
+    > algorithms is a good next step
+> good languages to learn
+    > ruby, clojure
+    > c++ & java
+
+    > since python uses dynamic typing it can lead to 
+    errors for a larger program that wouldn't exist for
+    a language that is more explicit like C++
+
+    > look @ your community know what they use
+> edge cases make code more convoluted and inelegant, is
+this true or a myth?
+    > different styles can lead to this happening more or
+    less
+    > one issue is flexibility of language
+        > python's dynamic tying makes it very flexible
+    > when you have to interface with an existing system
+        you have to do more checks b/c you 
+        can't automatically trust the input received
+
+> Big Data??
